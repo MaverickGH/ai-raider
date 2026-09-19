@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Strix Agent Interface
+AI-Рейдер — интерфейс агента (форк Strix)
 """
 
 import argparse
@@ -49,12 +49,12 @@ from strix.telemetry.logging import configure_dependency_logging
 BEDROCK_MODEL_PREFIX = "bedrock/"
 BEDROCK_MISSING_MODULE_ERROR = "No module named 'boto3'"
 BEDROCK_EXTRA_HINT = (
-    'Bedrock support is optional. Install it with: pipx install "strix-agent[bedrock]"'
+    'Bedrock support is optional. Install it with: pipx install "ai-raider-agent[bedrock]"'
 )
 VERTEX_MODEL_MARKER = "vertex"
 VERTEX_MISSING_MODULE_ERROR = "No module named 'google"
 VERTEX_EXTRA_HINT = (
-    'Vertex AI support is optional. Install it with: pipx install "strix-agent[vertex]"'
+    'Vertex AI support is optional. Install it with: pipx install "ai-raider-agent[vertex]"'
 )
 
 
@@ -65,10 +65,10 @@ logger = logging.getLogger(__name__)
 
 _ROOT_SUBCOMMAND_HELP = """
 Additional commands:
-  strix cloud ...          Use the managed Strix platform
-  strix auth ...           Manage model-subscription sign-in
-  strix view [RUN]         View a completed or running scan
-  strix completions SHELL  Generate zsh, bash, or fish tab completion
+  ai-raider cloud ...      Use the managed cloud platform
+  ai-raider auth ...           Manage model-subscription sign-in
+  ai-raider view [RUN]         View a completed or running scan
+  ai-raider completions SHELL  Generate zsh, bash, or fish tab completion
 """
 
 
@@ -130,7 +130,7 @@ def _subscription_error_hint(exc: BaseException) -> str | None:
     ):
         return (
             "Your ChatGPT sign-in has expired or was revoked. Sign in again:\n"
-            "  strix auth login chatgpt"
+            "  ai-raider auth login chatgpt"
         )
     return None
 
@@ -178,7 +178,7 @@ async def warm_up_llm(show_model_warning: bool = True) -> None:
             console.print(
                 Panel(
                     warn_text,
-                    title="[bold white]STRIX",
+                    title="[bold white]AI-Рейдер",
                     title_align="left",
                     border_style="yellow",
                     padding=(1, 2),
@@ -205,7 +205,7 @@ async def warm_up_llm(show_model_warning: bool = True) -> None:
             console.print(
                 Panel(
                     warn_text,
-                    title="[bold white]STRIX",
+                    title="[bold white]AI-Рейдер",
                     title_align="left",
                     border_style="yellow",
                     padding=(1, 2),
@@ -302,7 +302,7 @@ def display_completion_message(args: argparse.Namespace, results_path: Path) -> 
     view_text.append("\n")
     view_text.append("View", style="dim")
     view_text.append("    ")
-    view_text.append(f"strix view {args.run_name}", style="#22c55e")
+    view_text.append(f"ai-raider view {args.run_name}", style="#22c55e")
     panel_parts.extend(["\n", view_text])
 
     if not scan_completed:
@@ -319,7 +319,7 @@ def display_completion_message(args: argparse.Namespace, results_path: Path) -> 
 
     panel = Panel(
         panel_content,
-        title="[bold white]STRIX",
+        title="[bold white]AI-Рейдер",
         title_align="left",
         border_style=border_style,
         padding=(1, 2),
@@ -329,15 +329,8 @@ def display_completion_message(args: argparse.Namespace, results_path: Path) -> 
     console.print(panel)
     console.print()
     console.print(
-        "[#60a5fa]strix.ai[/]  [dim]·[/]  "
-        "[#60a5fa]docs.strix.ai[/]  [dim]·[/]  "
-        "[#60a5fa]discord.gg/strix-ai[/]"
+        "[dim]AI-Рейдер · автономный AI-пентест · только по разрешённым целям[/]"
     )
-    if not args.non_interactive:
-        console.print(
-            "[dim]Run a pentest in Strix Cloud[/]  [#60a5fa]app.strix.ai[/]  [dim]·[/]  "
-            "[dim]Enterprise[/]  [#60a5fa]strix.ai/demo[/]"
-        )
     console.print()
     if not args.non_interactive:
         notify_update(console)
@@ -351,7 +344,7 @@ def _print_error_panel(title: str, message: str) -> None:
     error_text.append(message, style="white")
     panel = Panel(
         error_text,
-        title="[bold white]STRIX",
+        title="[bold white]AI-Рейдер",
         title_align="left",
         border_style="red",
         padding=(1, 2),
@@ -384,7 +377,7 @@ def _print_model_connection_error(exc: BaseException, model_name: str) -> None:
 
     panel = Panel(
         error_text,
-        title="[bold white]STRIX",
+        title="[bold white]AI-Рейдер",
         title_align="left",
         border_style=border_style,
         padding=(1, 2),
@@ -431,7 +424,7 @@ def main() -> None:
             Console().print(_ROOT_SUBCOMMAND_HELP.strip(), markup=False)
             raise SystemExit(exc.code) from None
 
-    # `strix view [<run>]` is a viewer-only subcommand, dispatched before the
+    # `ai-raider view [<run>]` is a viewer-only subcommand, dispatched before the
     # scan argument parser (which requires a target) and before any scan setup.
     if len(sys.argv) > 1 and sys.argv[1] == "view":
         from strix.interface.viewer.cli import run_view
@@ -439,7 +432,7 @@ def main() -> None:
         run_view(sys.argv[2:])
         return
 
-    # `strix auth …` manages model-subscription sign-in and exits; it needs no
+    # `ai-raider auth …` manages model-subscription sign-in and exits; it needs no
     # target, Docker, or scan setup.
     if len(sys.argv) > 1 and sys.argv[1] == "auth":
         from strix.interface.auth_cli import run_auth
@@ -452,7 +445,7 @@ def main() -> None:
 
         sys.exit(run_completions(sys.argv[2:]))
 
-    # `strix cloud …` drives the managed platform (app.strix.ai) and exits;
+    # `ai-raider cloud …` drives the managed platform (app.strix.ai) and exits;
     # it needs no target, Docker, or scan setup.
     if len(sys.argv) > 1 and sys.argv[1] == "cloud":
         from strix.interface.cloud import run_cloud

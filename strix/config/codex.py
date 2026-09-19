@@ -57,7 +57,7 @@ _EXPIRY_SKEW_S = 300
 _refresh_lock = threading.Lock()
 
 # Kept separate from cli-config.json so OAuth tokens never land in the env-var config.
-AUTH_PATH = Path.home() / ".strix" / "subscription-auth.json"
+AUTH_PATH = Path.home() / ".ai-raider" / "subscription-auth.json"
 
 
 def _read_store() -> dict[str, Any]:
@@ -327,13 +327,13 @@ def get_valid_token() -> tuple[str, str]:
     guard if near expiry."""
     record = read_record()
     if record is None:
-        raise CodexAuthError("not_authenticated", "not signed in; run: strix auth login")
+        raise CodexAuthError("not_authenticated", "not signed in; run: ai-raider auth login")
     if not _near_expiry(record):
         return record["access"], record["account_id"]
     with _refresh_guard():
         record = read_record()
         if record is None:
-            raise CodexAuthError("not_authenticated", "not signed in; run: strix auth login")
+            raise CodexAuthError("not_authenticated", "not signed in; run: ai-raider auth login")
         if not _near_expiry(record):
             return record["access"], record["account_id"]
         try:

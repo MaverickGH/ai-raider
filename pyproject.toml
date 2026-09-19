@@ -1,12 +1,12 @@
 [project]
-name = "strix-agent"
-version = "1.6.2"
-description = "Open-source AI Hackers for your apps"
+name = "ai-raider-agent"
+version = "0.1.0"
+description = "AI-Рейдер — автономный AI-пентест (форк usestrix/strix, Apache-2.0)"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.12"
 authors = [
-  { name = "Strix", email = "hi@usestrix.com" },
+  { name = "CYBER Department", email = "v.batyshchykov@tap2play.pw" },
 ]
 keywords = [
   "cybersecurity",
@@ -57,7 +57,7 @@ vertex = ["google-auth>=2.0.0"]
 bedrock = ["boto3>=1.28.0"]
 
 [project.scripts]
-strix = "strix.interface.main:main"
+ai-raider = "strix.interface.main:main"
 
 [dependency-groups]
 dev = [

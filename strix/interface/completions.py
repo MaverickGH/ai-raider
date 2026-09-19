@@ -33,11 +33,11 @@ def run_completions(argv: list[str]) -> int:
         return 0
     if not argv or argv[0] in ("-h", "--help", "help"):
         sys.stdout.write(
-            "Usage: strix completions <zsh|bash|fish>\n\n"
+            "Usage: ai-raider completions <zsh|bash|fish>\n\n"
             "Enable tab completion for the current shell:\n"
-            "  zsh:  source <(strix completions zsh)\n"
-            "  bash: source <(strix completions bash)\n"
-            "  fish: strix completions fish | source\n"
+            "  zsh:  source <(ai-raider completions zsh)\n"
+            "  bash: source <(ai-raider completions bash)\n"
+            "  fish: ai-raider completions fish | source\n"
         )
         return 0
     shell = argv[0].lower()
@@ -348,7 +348,7 @@ def _bash_script() -> str:
   local candidate
   while IFS= read -r candidate; do
     candidates+=("$candidate")
-  done < <(strix completions --candidates "${COMP_WORDS[@]:1:$COMP_CWORD}")
+  done < <(ai-raider completions --candidates "${COMP_WORDS[@]:1:$COMP_CWORD}")
   COMPREPLY=("${candidates[@]}")
   for candidate in "${COMPREPLY[@]}"; do
     if [[ $candidate == */ ]]; then
@@ -367,7 +367,7 @@ def _fish_script() -> str:
     return r"""function __strix_candidates
   set -l words (commandline -opc)
   set -e words[1]
-  command strix completions --candidates $words (commandline -ct)
+  command ai-raider completions --candidates $words (commandline -ct)
 end
 complete -c strix -f -a '(__strix_candidates)'
 """

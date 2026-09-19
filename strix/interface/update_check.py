@@ -2,8 +2,8 @@
 
 Follows the pattern used by tools like gh, uv, and pip: a background,
 rate-limited (once per 24h) check against the release source, a cached
-result in ``~/.strix``, a non-intrusive notice with the upgrade command
-for the detected install method, and a ``strix --update`` self-update
+result in ``~/.ai-raider``, a non-intrusive notice with the upgrade command
+for the detected install method, and a ``ai-raider --update`` self-update
 path for the standalone binary install.
 """
 
@@ -36,11 +36,11 @@ from strix.telemetry._common import get_version
 logger = logging.getLogger(__name__)
 
 GITHUB_REPO = "usestrix/strix"
-PYPI_PACKAGE = "strix-agent"
+PYPI_PACKAGE = "ai-raider-agent"
 CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 REQUEST_TIMEOUT_SECONDS = 5
 
-_CACHE_PATH = Path.home() / ".strix" / "update-check.json"
+_CACHE_PATH = Path.home() / ".ai-raider" / "update-check.json"
 
 _background_thread: threading.Thread | None = None
 
@@ -70,10 +70,10 @@ def get_install_method() -> str:
 def get_upgrade_command(method: str | None = None) -> str:
     method = method or get_install_method()
     commands = {
-        "binary": "strix --update",
-        "pipx": "pipx upgrade strix-agent",
-        "uv": "uv tool upgrade strix-agent",
-        "pip": "pip install --upgrade strix-agent",
+        "binary": "ai-raider --update",
+        "pipx": "pipx upgrade ai-raider-agent",
+        "uv": "uv tool upgrade ai-raider-agent",
+        "pip": "pip install --upgrade ai-raider-agent",
     }
     return commands[method]
 

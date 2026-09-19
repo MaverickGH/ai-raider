@@ -59,7 +59,7 @@ def _configure(args: argparse.Namespace) -> bool:
 
 
 def _run_show(console: Console, argv: list[str], *, scopes_only: bool) -> int:
-    parser = CloudArgumentParser(prog=f"strix cloud session {'scopes' if scopes_only else 'show'}")
+    parser = CloudArgumentParser(prog=f"ai-raider cloud session {'scopes' if scopes_only else 'show'}")
     _common(parser)
     as_json = json_mode(flag="--json" in argv)
     try:
@@ -92,7 +92,7 @@ def _run_show(console: Console, argv: list[str], *, scopes_only: bool) -> int:
 
 def _run_scopes_set(console: Console, argv: list[str]) -> int:
     parser = CloudArgumentParser(
-        prog="strix cloud session scopes set",
+        prog="ai-raider cloud session scopes set",
         description="Change scopes within the access approved at browser sign-in.",
     )
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -160,7 +160,7 @@ def _error(console: Console, error: http.CloudError, *, as_json: bool) -> int:
 
 
 def _print_help(console: Console) -> None:
-    console.print("[bold]strix cloud session[/] commands:")
+    console.print("[bold]ai-raider cloud session[/] commands:")
     console.print("  show                         Show the remote CLI session (default).")
     console.print("  scopes                       Show granted scopes and consent ceiling.")
     console.print("  scopes set PROFILE           Use minimal, recommended, or full.")

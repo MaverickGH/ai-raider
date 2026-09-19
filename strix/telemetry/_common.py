@@ -24,7 +24,7 @@ _FIRST_RUN_CACHED: bool | None = None
 
 def get_version() -> str:
     try:
-        return version("strix-agent")
+        return version("ai-raider-agent")
     except PackageNotFoundError:
         logger.debug("strix-agent version lookup failed", exc_info=True)
         return "unknown"
@@ -34,7 +34,7 @@ def is_first_run() -> bool:
     global _FIRST_RUN_CACHED  # noqa: PLW0603
     if _FIRST_RUN_CACHED is not None:
         return _FIRST_RUN_CACHED
-    marker = Path.home() / ".strix" / ".seen"
+    marker = Path.home() / ".ai-raider" / ".seen"
     if marker.exists():
         _FIRST_RUN_CACHED = False
         return False

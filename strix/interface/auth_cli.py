@@ -1,6 +1,6 @@
-"""`strix auth` — ChatGPT subscription sign-in (login / status / logout).
+"""`ai-raider auth` — ChatGPT subscription sign-in (login / status / logout).
 
-Signing in only stores OAuth tokens (``~/.strix/subscription-auth.json``); model
+Signing in only stores OAuth tokens (``~/.ai-raider/subscription-auth.json``); model
 selection stays with ``STRIX_LLM``. A ``chatgpt/<model>`` STRIX_LLM runs on the
 subscription.
 """
@@ -38,13 +38,13 @@ _CALLBACK_TIMEOUT_S = 300
 LOGIN_PROVIDER = "chatgpt"
 _ACCEPTED_PROVIDERS = frozenset({LOGIN_PROVIDER, codex.PROVIDER})
 
-_USAGE = "Usage:\n  strix auth login chatgpt [--manual]\n  strix auth status\n  strix auth logout"
+_USAGE = "Usage:\n  ai-raider auth login chatgpt [--manual]\n  ai-raider auth status\n  ai-raider auth logout"
 
 
 def run_auth(argv: list[str]) -> int:
-    """Entry point for ``strix auth …``. Returns a process exit code."""
+    """Entry point for ``ai-raider auth …``. Returns a process exit code."""
     console = Console()
-    # Bare `strix auth` (no subcommand) defaults to login.
+    # Bare `ai-raider auth` (no subcommand) defaults to login.
     subcommand = argv[0] if argv else "login"
     rest = argv[1:]
 
@@ -67,7 +67,7 @@ def run_auth(argv: list[str]) -> int:
 
 
 def _login(console: Console, argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(prog="strix auth login", add_help=True)
+    parser = argparse.ArgumentParser(prog="ai-raider auth login", add_help=True)
     parser.add_argument(
         "provider",
         nargs="?",
@@ -245,7 +245,7 @@ def _first(query: dict[str, list[str]], key: str) -> str | None:
 def _status(console: Console) -> int:
     record = codex.read_record()
     if record is None:
-        console.print("[yellow]Not signed in.[/] Run [cyan]strix auth login chatgpt[/] to sign in.")
+        console.print("[yellow]Not signed in.[/] Run [cyan]ai-raider auth login chatgpt[/] to sign in.")
         return 1
     settings = load_settings()
     console.print("[green]Signed in[/] with a ChatGPT subscription.")

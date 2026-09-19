@@ -43,7 +43,7 @@ def validate_environment() -> None:
         if not codex.is_authenticated():
             console.print(
                 f"[red]STRIX_LLM={settings.llm.model} uses your ChatGPT subscription, "
-                "but you're not signed in.[/] Run [cyan]strix auth login chatgpt[/] first."
+                "but you're not signed in.[/] Run [cyan]ai-raider auth login chatgpt[/] first."
             )
             report_error("subscription_not_signed_in")
             sys.exit(1)
