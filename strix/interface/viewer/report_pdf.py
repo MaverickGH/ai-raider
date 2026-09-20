@@ -357,7 +357,7 @@ def _cover(
     styles: dict[str, ParagraphStyle], record: dict[str, Any], run_name: str
 ) -> list[Flowable]:
     header = Table(
-        [[_LogoMark(30), Paragraph("Strix", styles["wordmark"])]],
+        [[_LogoMark(30), Paragraph("AI-Рейдер", styles["wordmark"])]],
         colWidths=[38, _PAGE_W - 40 * mm - 38],
     )
     header.setStyle(
@@ -645,8 +645,8 @@ def generate_report_pdf(run_dir: Path) -> bytes:
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        title="Strix Security Report",
-        author="Strix",
+        title="AI-Рейдер — отчёт по безопасности",
+        author="AI-Рейдер",
         leftMargin=20 * mm,
         rightMargin=20 * mm,
         topMargin=22 * mm,

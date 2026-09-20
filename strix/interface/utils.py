@@ -979,7 +979,7 @@ def _resolve_repo_diff_scope(
 
     if _is_repo_shallow(repo_path):
         raise ValueError(
-            "Strix requires full git history for diff-scope. Please set fetch-depth: 0 "
+            "AI-Рейдер требует полную git-историю для diff-scope. Please set fetch-depth: 0 "
             "in your CI config."
         )
 

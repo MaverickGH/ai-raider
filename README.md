@@ -42,10 +42,22 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 
 ## Отличия от upstream (Strix)
 
-- Ребрендинг в «AI-Рейдер», CLI-команда `ai-raider`.
-- Телеметрия выключена по умолчанию.
-- Каталог конфигурации `~/.ai-raider`.
-- Дальнейшие доработки — в CHANGELOG.
+- Ребрендинг в «AI-Рейдер», CLI-команда `ai-raider`, каталог конфигурации `~/.ai-raider`.
+- Телеметрия выключена по умолчанию; апселл облака убран из подсказок.
+- **Русские отчёты**: markdown-отчёт о пентесте и карточки уязвимостей на русском (значения от модели — как есть).
+- **Свой sandbox-образ** `ai-raider-sandbox:0.1.0` (см. `containers/build-sandbox.sh`), не зависит от тега upstream при запуске.
+- **Локальные модели**: пресет `run-scan-local.sh` для Ollama/LM Studio без облачного ключа.
+
+## Быстрые команды
+
+```bash
+./run-scan.sh https://staging.твой-домен quick     # облачная модель (STRIX_LLM + ключ провайдера)
+./run-scan-local.sh https://staging.твой-домен      # локальная модель (Ollama), без облака
+
+# свой sandbox-образ:
+./containers/build-sandbox.sh          # быстрый брендированный (на базе upstream)
+./containers/build-sandbox.sh --full   # полностью независимый из Kali-Dockerfile (долго)
+```
 
 ## Лицензия
 

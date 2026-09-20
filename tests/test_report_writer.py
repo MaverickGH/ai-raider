@@ -71,13 +71,13 @@ def test_render_vulnerability_md_includes_core_sections() -> None:
         ),
     )
     assert "# SQL Injection" in md
-    assert "**Severity:** HIGH" in md
-    assert "## Description" in md
-    assert "## Impact" in md
-    assert "## Technical Analysis" in md
-    assert "## Proof of Concept" in md
-    assert "## Remediation" in md
-    assert "**Endpoint:** /api/login" in md
+    assert "**Критичность:** HIGH" in md
+    assert "## Описание" in md
+    assert "## Влияние" in md
+    assert "## Технический анализ" in md
+    assert "## Proof of Concept (PoC)" in md
+    assert "## Устранение" in md
+    assert "**Эндпоинт:** /api/login" in md
 
 
 def test_render_vulnerability_md_includes_dependency_fields() -> None:
@@ -104,14 +104,14 @@ def test_render_vulnerability_md_includes_dependency_fields() -> None:
             remediation_steps="Upgrade to 4.17.21.",
         ),
     )
-    assert "**Package:** lodash" in md
-    assert "**Ecosystem:** npm" in md
-    assert "**Installed Version:** 4.17.20" in md
-    assert "**Fixed Version:** 4.17.21" in md
+    assert "**Пакет:** lodash" in md
+    assert "**Экосистема:** npm" in md
+    assert "**Установленная версия:** 4.17.20" in md
+    assert "**Исправленная версия:** 4.17.21" in md
     assert "**CWE:** CWE-94" in md
-    assert "**Fix Effort:** Trivial" in md
-    assert "## Evidence" in md
-    assert "## Assumptions" in md
+    assert "**Трудоёмкость фикса:** Trivial" in md
+    assert "## Доказательства" in md
+    assert "## Допущения" in md
 
 
 def test_render_vulnerability_md_poc_code_cannot_break_out_of_fence() -> None:
@@ -120,7 +120,7 @@ def test_render_vulnerability_md_poc_code_cannot_break_out_of_fence() -> None:
     injected = "curl x\n```\n\n## Injected Heading\n![x](https://evil.example/beacon.png)"
     md = render_vulnerability_md(_sample_report(poc_script_code=injected))
     lines = md.split("\n")
-    opening = next(ln for ln in lines[lines.index("## Proof of Concept") + 1 :] if ln.strip())
+    opening = next(ln for ln in lines[lines.index("## Proof of Concept (PoC)") + 1 :] if ln.strip())
     ticks = opening[: len(opening) - len(opening.lstrip("`"))]
     assert len(ticks) >= 4  # wider than the payload's 3-backtick run
     assert "`" not in opening.removeprefix(ticks)  # backtick run + language tag only
@@ -236,7 +236,7 @@ def test_write_vulnerabilities_skips_already_saved_ids(tmp_path: Path) -> None:
 def test_write_executive_report_writes_markdown(tmp_path: Path) -> None:
     write_executive_report(tmp_path, "Scan complete. No critical issues.")
     content = (tmp_path / "penetration_test_report.md").read_text(encoding="utf-8")
-    assert "# Security Penetration Test Report" in content
+    assert "# Отчёт о тестировании на проникновение" in content
     assert "Scan complete. No critical issues." in content
 
 
@@ -259,9 +259,9 @@ def test_render_vulnerability_md_surfaces_calibration_metadata() -> None:
         }
     )
 
-    assert "**Confidence:** Medium" in md
-    assert "## Counterevidence" in md
+    assert "**Уверенность:** Medium" in md
+    assert "## Контрдоказательства" in md
     assert "Egress appears filtered at the network layer." in md
-    assert "## Confidence Rationale" in md
-    assert "## What Would Change This Severity" in md
-    assert "## Fix Verification" in md
+    assert "## Обоснование уверенности" in md
+    assert "## Что изменит критичность" in md
+    assert "## Проверка фикса" in md

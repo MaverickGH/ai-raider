@@ -1,0 +1,9 @@
+# Брендированный sandbox-образ AI-Рейдер на базе проверенной песочницы.
+# Быстрая сборка (добавляет только слой метаданных). Для полностью независимого
+# образа из Kali-Dockerfile используйте: ./containers/build-sandbox.sh --full
+FROM ghcr.io/usestrix/strix-sandbox:1.3.0
+
+LABEL org.opencontainers.image.title="AI-Рейдер Sandbox" \
+      org.opencontainers.image.description="Песочница AI-Рейдер для автономного пентеста" \
+      org.opencontainers.image.vendor="CYBER Department" \
+      org.opencontainers.image.version="0.1.0"
