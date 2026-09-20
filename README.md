@@ -59,6 +59,16 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 ./containers/build-sandbox.sh --full   # полностью независимый из Kali-Dockerfile (долго)
 ```
 
+## Интеграция с Cyber Galaxy
+
+Находки прогона можно импортировать в приватную админку платформы Cyber Galaxy (раздел «Пентест-находки», только для владельцев):
+
+```bash
+./scripts/export-findings.sh    # покажет путь к vulnerabilities.json последнего прогона
+```
+
+Дальше в админке: **Пентест-находки → Импорт прогона** — загрузи `vulnerabilities.json` (и по желанию `penetration_test_report.md`). Находки чувствительные и в публичный контент не попадают.
+
 ## Лицензия
 
 Apache License 2.0 — см. [LICENSE](LICENSE) и [NOTICE](NOTICE). Основано на Strix (© Strix), с сохранением авторства согласно условиям лицензии.
