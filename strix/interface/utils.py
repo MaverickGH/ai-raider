@@ -1617,7 +1617,7 @@ def check_docker_connection() -> Any:
 
         panel = Panel(
             error_text,
-            title="[bold white]STRIX",
+            title="[bold white]AI-Рейдер",
             title_align="left",
             border_style="red",
             padding=(1, 2),

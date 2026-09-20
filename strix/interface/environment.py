@@ -145,7 +145,7 @@ def validate_environment() -> None:
 
         panel = Panel(
             error_text,
-            title="[bold white]STRIX",
+            title="[bold white]AI-Рейдер",
             title_align="left",
             border_style="red",
             padding=(1, 2),
@@ -177,7 +177,7 @@ def check_docker_installed() -> None:
 
         panel = Panel(
             error_text,
-            title="[bold white]STRIX",
+            title="[bold white]AI-Рейдер",
             title_align="left",
             border_style="red",
             padding=(1, 2),
@@ -225,7 +225,7 @@ def pull_docker_image() -> None:
 
             panel = Panel(
                 error_text,
-                title="[bold white]STRIX",
+                title="[bold white]AI-Рейдер",
                 title_align="left",
                 border_style="red",
                 padding=(1, 2),
