@@ -145,7 +145,7 @@ func (m *Model) finishSelection() tea.Cmd {
 	}
 }
 
-// iconPrefixes and decorativeLines port StrixTUIApp._ICON_PREFIXES and
+// iconPrefixes and decorativeLines port AiRaiderTUIApp._ICON_PREFIXES and
 // _DECORATIVE_LINES: UI ornaments dropped from copied chat text.
 // kittyPlaceholderRune marks kitty graphics placeholder cells, which carry no
 // copyable text.

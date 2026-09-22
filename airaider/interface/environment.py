@@ -8,13 +8,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from strix.config import IntegrationSettings, codex, load_settings
-from strix.interface.utils import (
+from airaider.config import IntegrationSettings, codex, load_settings
+from airaider.interface.utils import (
     check_docker_connection,
     image_exists,
     process_pull_line,
 )
-from strix.telemetry import report_error
+from airaider.telemetry import report_error
 
 
 logger = logging.getLogger(__name__)
@@ -111,9 +111,9 @@ def validate_environment() -> None:
                         " - API key for Exa web search (enables real-time research)\n",
                         style="white",
                     )
-                elif var == "STRIX_REASONING_EFFORT":
+                elif var == "AIRAIDER_REASONING_EFFORT":
                     error_text.append("• ", style="white")
-                    error_text.append("STRIX_REASONING_EFFORT", style="bold cyan")
+                    error_text.append("AIRAIDER_REASONING_EFFORT", style="bold cyan")
                     error_text.append(
                         " - Reasoning effort level: none, minimal, low, medium, high, xhigh, "
                         "max (default: high)\n",
@@ -137,9 +137,9 @@ def validate_environment() -> None:
                     )
                 elif var == "EXA_API_KEY":
                     error_text.append("export EXA_API_KEY='your-exa-key-here'\n", style="dim white")
-                elif var == "STRIX_REASONING_EFFORT":
+                elif var == "AIRAIDER_REASONING_EFFORT":
                     error_text.append(
-                        "export STRIX_REASONING_EFFORT='high'\n",
+                        "export AIRAIDER_REASONING_EFFORT='high'\n",
                         style="dim white",
                     )
 

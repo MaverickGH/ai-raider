@@ -1,7 +1,7 @@
 """Read the open-source user's MCP servers from ``~/.ai-raider/mcp-servers.json``.
 
 An open-source user lists the MCP servers they want the agent to reach in a
-small JSON file. Strix reads it at the start of a run and connects to each
+small JSON file. AiRaider reads it at the start of a run and connects to each
 server, holding the live sessions in the run's registry for the agent to reach
 on demand. The file is optional; without it the run simply gets no MCP
 connections.
@@ -21,18 +21,18 @@ from typing import cast
 
 from pydantic import ValidationError
 
-from strix.tools.mcp.config import McpConnectionConfig
+from airaider.tools.mcp.config import McpConnectionConfig
 
 
 logger = logging.getLogger(__name__)
 
 
 _DEFAULT_PATH: Path = Path.home() / ".ai-raider" / "mcp-servers.json"
-_PATH_ENV_VAR = "STRIX_MCP_CONFIG"
+_PATH_ENV_VAR = "AIRAIDER_MCP_CONFIG"
 # Per-run selection, set by the --mcp-server / --mcp-exclude CLI flags. Each is a
 # comma-separated list of connection names.
-_ONLY_ENV_VAR = "STRIX_MCP_ONLY"
-_EXCLUDE_ENV_VAR = "STRIX_MCP_EXCLUDE"
+_ONLY_ENV_VAR = "AIRAIDER_MCP_ONLY"
+_EXCLUDE_ENV_VAR = "AIRAIDER_MCP_EXCLUDE"
 
 
 def _resolve_path(path: Path | None) -> Path:
@@ -73,8 +73,8 @@ def _parse_names(env_var: str) -> set[str]:
 def _apply_run_selection(configs: list[McpConnectionConfig]) -> list[McpConnectionConfig]:
     """Restrict this run's connections to an optional include/exclude selection.
 
-    ``STRIX_MCP_ONLY`` (if set) keeps only the named connections; then
-    ``STRIX_MCP_EXCLUDE`` drops any named connection. With neither set, every
+    ``AIRAIDER_MCP_ONLY`` (if set) keeps only the named connections; then
+    ``AIRAIDER_MCP_EXCLUDE`` drops any named connection. With neither set, every
     connection is kept.
     """
     only = _parse_names(_ONLY_ENV_VAR)
@@ -101,7 +101,7 @@ def _apply_run_selection(configs: list[McpConnectionConfig]) -> list[McpConnecti
 def load_user_mcp_configs(path: Path | None = None) -> list[McpConnectionConfig]:
     """Load MCP connection configs from the user's JSON file.
 
-    The path is ``path`` if given, else ``$STRIX_MCP_CONFIG``, else
+    The path is ``path`` if given, else ``$AIRAIDER_MCP_CONFIG``, else
     ``~/.ai-raider/mcp-servers.json``. The file is a JSON list of server entries.
     A missing file returns ``[]``; an unreadable or non-list file is logged and
     returns ``[]``; individual entries that fail validation are logged and

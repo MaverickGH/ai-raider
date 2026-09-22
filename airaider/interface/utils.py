@@ -18,9 +18,9 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from strix.config import load_settings
-from strix.telemetry import report_error
-from strix.utils.api_spec import detect_spec_format
+from airaider.config import load_settings
+from airaider.telemetry import report_error
+from airaider.utils.api_spec import detect_spec_format
 
 
 logger = logging.getLogger(__name__)
@@ -282,7 +282,7 @@ def is_subscription_run(report_state: Any) -> bool:
     record = getattr(report_state, "run_record", None)
     if isinstance(record, dict) and record.get("auth_mode"):
         return record.get("auth_mode") == "subscription"
-    from strix.config import codex
+    from airaider.config import codex
 
     return codex.auth_mode(load_settings().llm.model) == "subscription"
 
@@ -1506,7 +1506,7 @@ def write_fetched_collection(collection: dict[str, Any], collection_uid: str) ->
     Returns the file path, so a ``postman://`` target continues as an ordinary
     spec file from here on and the API key never leaves the host.
     """
-    staging = Path(tempfile.gettempdir()) / "strix_api_specs" / "fetched"
+    staging = Path(tempfile.gettempdir()) / "airaider_api_specs" / "fetched"
     staging.mkdir(parents=True, exist_ok=True)
     path = staging / f"{sanitize_name(collection_uid)}.postman_collection.json"
     path.write_text(json.dumps(collection, indent=2), encoding="utf-8")
@@ -1525,7 +1525,7 @@ def stage_api_specs(targets_info: list[dict[str, Any]], run_name: str) -> list[d
     if not specs:
         return []
 
-    staging = Path(tempfile.gettempdir()) / "strix_api_specs" / run_name
+    staging = Path(tempfile.gettempdir()) / "airaider_api_specs" / run_name
     staging.mkdir(parents=True, exist_ok=True)
 
     used: set[str] = set()
@@ -1558,7 +1558,7 @@ def clone_repository(repo_url: str, run_name: str, dest_name: str | None = None)
     if git_executable is None:
         raise FileNotFoundError("Git executable not found in PATH")
 
-    temp_dir = Path(tempfile.gettempdir()) / "strix_repos" / run_name
+    temp_dir = Path(tempfile.gettempdir()) / "airaider_repos" / run_name
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     if dest_name:
@@ -1611,7 +1611,7 @@ def check_docker_connection() -> Any:
         error_text.append("\n\n", style="white")
         error_text.append("Cannot connect to Docker daemon.\n", style="white")
         error_text.append(
-            "Please ensure Docker Desktop is installed and running, and try running strix again.\n",
+            "Please ensure Docker Desktop is installed and running, and try running airaider again.\n",
             style="white",
         )
 

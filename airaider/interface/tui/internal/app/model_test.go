@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/usestrix/strix/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
 )
 
 type recordingConn struct{ bytes.Buffer }
@@ -177,10 +177,10 @@ func TestCollectionBootstrapChunksAndVersionedDelta(t *testing.T) {
 
 func TestAgentCollectionDeltaClearsErrorMessage(t *testing.T) {
 	model := New(nil)
-	failed := protocol.Agent{ID: "root", Name: "Strix", Status: "failed", ErrorMessage: "provider rejected"}
+	failed := protocol.Agent{ID: "root", Name: "AiRaider", Status: "failed", ErrorMessage: "provider rejected"}
 	model.handleEnvelope(bootstrapEnvelope(t, "agents", 1, failed))
 
-	resumed := protocol.Agent{ID: "root", Name: "Strix", Status: "waiting"}
+	resumed := protocol.Agent{ID: "root", Name: "AiRaider", Status: "waiting"}
 	delta := protocol.CollectionDelta{
 		Collection: "agents", BaseRevision: 1, Revision: 2, Cursor: 0, NextCursor: 1, Done: true,
 		Operations: []protocol.CollectionOperation{{Op: "upsert", Item: rawJSON(t, resumed)}},
@@ -393,7 +393,7 @@ func TestSetupStartScreenFitsNarrowTerminal(t *testing.T) {
 	// A narrow terminal falls back to the plain wordmark, but the launch screen
 	// never gives up its identity entirely.
 	topRow := ansi.Strip(strings.SplitN(wordmark(), "\n", 2)[0])
-	if !strings.Contains(view, topRow) && !strings.Contains(view, "STRIX") {
+	if !strings.Contains(view, topRow) && !strings.Contains(view, "AIRAIDER") {
 		t.Fatalf("narrow start screen logo is missing: %s", view)
 	}
 	lines := strings.Split(view, "\n")
@@ -506,7 +506,7 @@ func TestModalKeepsBackgroundVisible(t *testing.T) {
 	if !strings.Contains(view, "UNIQUE_AGENT") {
 		t.Fatalf("modal overlay hid the background agent tree")
 	}
-	if !strings.Contains(view, "Strix Help") {
+	if !strings.Contains(view, "AiRaider Help") {
 		t.Fatalf("modal content missing")
 	}
 }
@@ -1197,7 +1197,7 @@ func TestStopDialogAndCommandAreLimitedToActiveAgents(t *testing.T) {
 
 func TestBudgetPauseShowsOneWarningToastUntilResumed(t *testing.T) {
 	model := New(nil)
-	model.snapshot.Agents = []protocol.Agent{{ID: "root", Name: "Strix", Status: "budget_paused"}}
+	model.snapshot.Agents = []protocol.Agent{{ID: "root", Name: "AiRaider", Status: "budget_paused"}}
 	if cmd := model.notifyBudgetPause(); cmd == nil {
 		t.Fatal("expected a toast command on first budget pause")
 	}
@@ -1334,7 +1334,7 @@ func TestLongErrorDoesNotBreakTheFrame(t *testing.T) {
 	model.handleEnvelope(stateEnvelope(t, 1, protocol.Snapshot{ScanState: "running"}))
 	bootstrap := protocol.CollectionBootstrap{
 		Collection: "agents", Revision: 1, Cursor: 0, NextCursor: 1, Done: true,
-		Items: []json.RawMessage{rawJSON(t, protocol.Agent{ID: "a0", Name: "Strix", Status: "running"})},
+		Items: []json.RawMessage{rawJSON(t, protocol.Agent{ID: "a0", Name: "AiRaider", Status: "running"})},
 	}
 	model.handleEnvelope(protocol.Envelope{
 		Version: protocol.Version, Type: "collection_bootstrap", Payload: rawJSON(t, bootstrap),
@@ -1355,7 +1355,7 @@ func TestLongErrorDoesNotBreakTheFrame(t *testing.T) {
 		}
 	}
 	// The sidebar has to survive: its panels are the right edge of the frame.
-	if !strings.Contains(ansi.Strip(model.View()), "Strix") {
+	if !strings.Contains(ansi.Strip(model.View()), "AiRaider") {
 		t.Fatal("the agent tree was pushed out of the frame")
 	}
 }
@@ -1424,7 +1424,7 @@ func TestNarrowTerminalKeepsTheFrameIntact(t *testing.T) {
 		model.handleEnvelope(stateEnvelope(t, 1, protocol.Snapshot{ScanState: "running"}))
 		bootstrap := protocol.CollectionBootstrap{
 			Collection: "agents", Revision: 1, Cursor: 0, NextCursor: 1, Done: true,
-			Items: []json.RawMessage{rawJSON(t, protocol.Agent{ID: "a0", Name: "Strix", Status: "running"})},
+			Items: []json.RawMessage{rawJSON(t, protocol.Agent{ID: "a0", Name: "AiRaider", Status: "running"})},
 		}
 		model.handleEnvelope(protocol.Envelope{
 			Version: protocol.Version, Type: "collection_bootstrap", Payload: rawJSON(t, bootstrap),

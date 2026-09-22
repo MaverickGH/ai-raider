@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
-from strix.interface.tui.live_view import TuiLiveView as BaseLiveView
+from airaider.interface.tui.live_view import TuiLiveView as BaseLiveView
 
 
 _MAX_LIVE_EVENTS = 10_000

@@ -1,14 +1,14 @@
 """Build and encrypt a branded PDF report for a run.
 
-The layout mirrors the Strix cloud pentest report (cover page, executive
-severity grid, per-finding detail with colored severity badges) but is rendered
+The layout is a professional pentest report (cover page, executive
+severity grid, per-finding detail with colored severity badges) rendered
 entirely locally with reportlab, so it ships without a browser or heavy system
 deps and keeps the report on the user's machine.
 
 The PDF carries FULL finding detail, including proof-of-concept scripts, so it
 is encrypted end to end with AES-256. The password is generated locally with a
 CSPRNG, shown only to the local browser, and never leaves the machine except in
-the user's own hands. Strix cannot read the delivered report.
+the user's own hands. AiRaider cannot read the delivered report.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from strix.interface.viewer.transcript import (
+from airaider.interface.viewer.transcript import (
     primary_target,
     read_run_summary,
     read_vulnerabilities,
@@ -119,7 +119,7 @@ class _NumberedCanvas(pdfcanvas.Canvas):  # type: ignore[misc]  # reportlab base
 
 
 class _LogoMark(Flowable):  # type: ignore[misc]  # reportlab base is untyped
-    """The rounded-square Strix mark drawn inline (no raster asset to ship)."""
+    """The rounded-square AiRaider mark drawn inline (no raster asset to ship)."""
 
     def __init__(self, size: float = 30) -> None:
         super().__init__()
@@ -693,7 +693,7 @@ def build_encrypted_report(run_dir: Path) -> tuple[bytes, str, str]:
     pdf_bytes = generate_report_pdf(run_dir)
     password = generate_password()
     encrypted = encrypt_pdf(pdf_bytes, password)
-    filename = f"strix-report-{run_name}.pdf"
+    filename = f"airaider-report-{run_name}.pdf"
     return encrypted, password, filename
 
 

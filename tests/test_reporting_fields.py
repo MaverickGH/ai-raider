@@ -8,15 +8,15 @@ from typing import TYPE_CHECKING, Any, cast
 import pytest
 from agents.tool_context import ToolContext
 
-from strix.report.dedupe import (
+from airaider.report.dedupe import (
     _check_dependency_duplicate,
     _prepare_report_for_comparison,
     check_duplicate,
 )
-from strix.report.state import ReportState, set_global_report_state
-from strix.tools.finish.tool import finish_scan
-from strix.tools.reporting import tool as reporting_tool
-from strix.tools.reporting.tool import (
+from airaider.report.state import ReportState, set_global_report_state
+from airaider.tools.finish.tool import finish_scan
+from airaider.tools.reporting import tool as reporting_tool
+from airaider.tools.reporting.tool import (
     _do_create,
     _do_create_dependency,
     _do_update,
@@ -631,7 +631,7 @@ async def test_dependency_report_dedupe_candidate_includes_dependency_metadata(
         captured["existing"] = existing
         return {"is_duplicate": False}
 
-    monkeypatch.setattr("strix.report.dedupe.check_duplicate", fake_check_duplicate)
+    monkeypatch.setattr("airaider.report.dedupe.check_duplicate", fake_check_duplicate)
     report_state.vulnerability_reports.append(
         {
             "id": "vuln-0001",
@@ -1384,7 +1384,7 @@ async def test_duplicate_verdict_rejects_without_touching_the_existing_report(
             "reason": "Same root cause on the same endpoint.",
         }
 
-    monkeypatch.setattr("strix.report.dedupe.check_duplicate", fake_check_duplicate)
+    monkeypatch.setattr("airaider.report.dedupe.check_duplicate", fake_check_duplicate)
 
     result = await _do_create(**_CONFIRMED_KWARGS, agent_id="834f79fb", agent_name="Validation")
 

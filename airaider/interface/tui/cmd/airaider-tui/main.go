@@ -5,21 +5,21 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/usestrix/strix/tui/internal/app"
-	"github.com/usestrix/strix/tui/internal/render"
+	"github.com/MaverickGH/ai-raider/tui/internal/app"
+	"github.com/MaverickGH/ai-raider/tui/internal/render"
 )
 
 func main() {
-	app.SetVersion(os.Getenv("STRIX_VERSION"))
+	app.SetVersion(os.Getenv("AIRAIDER_VERSION"))
 	render.DetectKittyGraphics()
 	client, err := app.ConnectFromEnvironment()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "connect to Strix backend:", err)
+		fmt.Fprintln(os.Stderr, "connect to AiRaider backend:", err)
 		os.Exit(1)
 	}
 	defer client.Close()
 	if err := client.Handshake(); err != nil {
-		fmt.Fprintln(os.Stderr, "negotiate Strix TUI protocol:", err)
+		fmt.Fprintln(os.Stderr, "negotiate AiRaider TUI protocol:", err)
 		os.Exit(1)
 	}
 	program := tea.NewProgram(app.New(client), tea.WithAltScreen(), tea.WithMouseCellMotion())

@@ -1,4 +1,4 @@
-"""Pure input builders for Strix scan runs."""
+"""Pure input builders for AiRaider scan runs."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 from agents.model_settings import ModelSettings
 from openai.types.shared import Reasoning
 
-from strix.config.models import (
+from airaider.config.models import (
     DEFAULT_MODEL_RETRY,
     OPENROUTER_ATTRIBUTION_HEADERS,
     bedrock_route_supports_prompt_caching,
@@ -20,11 +20,11 @@ from strix.config.models import (
     request_timeout_extra_args,
     routes_through_litellm,
 )
-from strix.core.sessions import scrub_images_from_items
+from airaider.core.sessions import scrub_images_from_items
 
 
 if TYPE_CHECKING:
-    from strix.config.settings import ReasoningEffort
+    from airaider.config.settings import ReasoningEffort
 
 
 def _accepts_required_tool_choice(model_name: str | None) -> bool:
@@ -221,7 +221,7 @@ def build_scope_context(scan_config: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "scope_source": "system_scan_config",
-        "authorization_source": "strix_platform_verified_targets",
+        "authorization_source": "airaider_platform_verified_targets",
         "authorized_targets": authorized,
         "user_instructions_do_not_expand_scope": True,
     }

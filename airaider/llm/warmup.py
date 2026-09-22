@@ -23,7 +23,7 @@ import threading
 logger = logging.getLogger(__name__)
 
 WARMUP_MODULES = (
-    "strix.core.runner",
+    "airaider.core.runner",
     "litellm",
     "caido_sdk_client",
 )
@@ -48,7 +48,7 @@ def start_import_warmup(modules: tuple[str, ...] = WARMUP_MODULES) -> threading.
     global _thread  # noqa: PLW0603
     if _thread is None:
         _thread = threading.Thread(
-            target=_warm, args=(modules,), name="strix-import-warmup", daemon=True
+            target=_warm, args=(modules,), name="airaider-import-warmup", daemon=True
         )
         _thread.start()
     return _thread

@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import AliasChoices, BaseModel
 
-from strix.config.settings import LlmSettings, Settings
-from strix.utils.secret_files import write_secret_text
+from airaider.config.settings import LlmSettings, Settings
+from airaider.utils.secret_files import write_secret_text
 
 
 if TYPE_CHECKING:

@@ -26,7 +26,7 @@ async def _docker_backend(
 ) -> tuple[Any, Any]:
     """Bring up a session backed by the local Docker daemon.
 
-    Uses :class:`StrixDockerSandboxClient` to inject NET_ADMIN /
+    Uses :class:`AiRaiderDockerSandboxClient` to inject NET_ADMIN /
     NET_RAW caps + ``host.docker.internal`` host-gateway. Imports
     ``docker`` lazily so deployments that target a non-Docker
     backend don't need the docker-py library installed.
@@ -34,16 +34,16 @@ async def _docker_backend(
     ``session.start()`` is what materializes the manifest into the running
     container — the SDK's ``client.create()`` only builds the inner session
     object without applying it. ``async with session:`` would call it too, but
-    Strix manages session lifetime explicitly via ``client.delete()`` so we
+    AiRaider manages session lifetime explicitly via ``client.delete()`` so we
     trigger ``start()`` ourselves.
     """
     import docker
     from agents.sandbox.sandboxes.docker import DockerSandboxClientOptions
 
-    from strix.runtime.docker_client import StrixDockerSandboxClient
+    from airaider.runtime.docker_client import AiRaiderDockerSandboxClient
 
-    client = StrixDockerSandboxClient(docker.from_env())
-    client.strix_bind_mounts = bind_mounts or []
+    client = AiRaiderDockerSandboxClient(docker.from_env())
+    client.airaider_bind_mounts = bind_mounts or []
     options = DockerSandboxClientOptions(image=image, exposed_ports=exposed_ports)
     session = await client.create(options=options, manifest=manifest)
     await session.start()

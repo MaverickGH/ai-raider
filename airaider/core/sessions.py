@@ -1,4 +1,4 @@
-"""SDK session helpers for Strix agents."""
+"""SDK session helpers for AiRaider agents."""
 
 from __future__ import annotations
 

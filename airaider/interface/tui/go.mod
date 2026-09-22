@@ -1,4 +1,4 @@
-module github.com/usestrix/strix/tui
+module github.com/MaverickGH/ai-raider/tui
 
 go 1.24.0
 

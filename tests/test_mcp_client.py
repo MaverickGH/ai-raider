@@ -22,10 +22,10 @@ from mcp.types import CallToolResult, TextContent
 from mcp.types import Tool as MCPTool
 from pydantic import ValidationError
 
-from strix.agents import factory
-from strix.agents.prompt import render_system_prompt
-from strix.interface.tui.live_view import TuiLiveView
-from strix.tools.mcp import (
+from airaider.agents import factory
+from airaider.agents.prompt import render_system_prompt
+from airaider.interface.tui.live_view import TuiLiveView
+from airaider.tools.mcp import (
     MCP_REGISTRY_CONTEXT_KEY,
     BearerAuth,
     McpCallInfo,
@@ -41,8 +41,8 @@ from strix.tools.mcp import (
     namespaced_tool_name,
     resolve_mcp_call,
 )
-from strix.tools.mcp import client as mcp_client
-from strix.tools.mcp import session as mcp_session_mod
+from airaider.tools.mcp import client as mcp_client
+from airaider.tools.mcp import session as mcp_session_mod
 
 
 if TYPE_CHECKING:
@@ -191,7 +191,7 @@ async def _aclose_all(connections: list[Any]) -> None:
 @pytest.fixture(autouse=True)
 def _clear_mcp_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Hide any MCP settings the developer has exported in their own shell."""
-    for name in ("STRIX_MCP_CONFIG", "STRIX_MCP_ONLY", "STRIX_MCP_EXCLUDE"):
+    for name in ("AIRAIDER_MCP_CONFIG", "AIRAIDER_MCP_ONLY", "AIRAIDER_MCP_EXCLUDE"):
         monkeypatch.delenv(name, raising=False)
 
 
@@ -638,8 +638,8 @@ def test_agent_carries_exactly_the_dispatch_tools_regardless_of_connections() ->
     """No matter how many MCP connections a run makes, an agent's tool list gains
     exactly list_mcps, describe_mcp, and call_mcp and never a per-connection
     provider tool."""
-    root = factory.build_strix_agent(is_root=True)
-    child = factory.build_strix_agent(is_root=False)
+    root = factory.build_airaider_agent(is_root=True)
+    child = factory.build_airaider_agent(is_root=False)
 
     root_names = [t.name for t in root.tools]
     child_names = [t.name for t in child.tools]
@@ -660,7 +660,7 @@ def test_agent_carries_exactly_the_dispatch_tools_regardless_of_connections() ->
     # The tool list does not grow with connection count: it is the same set of
     # names whether or not any connection exists, because connections never
     # contribute tools.
-    assert root_names == [t.name for t in factory.build_strix_agent(is_root=True).tools]
+    assert root_names == [t.name for t in factory.build_airaider_agent(is_root=True).tools]
 
 
 # --- prompt guidance replaces the old per-connection inventory ---------------
@@ -772,7 +772,7 @@ def test_loader_reads_env_var_override(tmp_path: Path, monkeypatch: pytest.Monke
         json.dumps([{"name": "local_fs", "transport": "stdio", "command": "npx"}]),
         encoding="utf-8",
     )
-    monkeypatch.setenv("STRIX_MCP_CONFIG", str(config_file))
+    monkeypatch.setenv("AIRAIDER_MCP_CONFIG", str(config_file))
 
     configs = load_user_mcp_configs()
 
@@ -811,7 +811,7 @@ def test_loader_include_selection_keeps_only_named(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     config_file = _names_file(tmp_path, "a", "b", "c")
-    monkeypatch.setenv("STRIX_MCP_ONLY", "a,c")
+    monkeypatch.setenv("AIRAIDER_MCP_ONLY", "a,c")
 
     configs = load_user_mcp_configs(config_file)
 
@@ -822,7 +822,7 @@ def test_loader_exclude_selection_drops_named(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     config_file = _names_file(tmp_path, "a", "b", "c")
-    monkeypatch.setenv("STRIX_MCP_EXCLUDE", "b")
+    monkeypatch.setenv("AIRAIDER_MCP_EXCLUDE", "b")
 
     configs = load_user_mcp_configs(config_file)
 
@@ -916,7 +916,7 @@ async def test_connect_cleans_up_started_sessions_when_attach_is_cancelled(
 
 
 # --- reading a tool call back to the server it went out to -------------------
-# namespaced_tool_name stays in strix.tools.mcp.naming so call_mcp can build the
+# namespaced_tool_name stays in airaider.tools.mcp.naming so call_mcp can build the
 # result_transform label. The connection a call went out to is read off the
 # call's arguments by the TUI projection, not off the tool name.
 
@@ -1548,7 +1548,7 @@ async def test_reconnect_reuses_the_stored_config_and_never_logs_the_token(
     registry = McpRegistry()
     entry = registry.add(name="fs", session=session, tool_count=1)
 
-    with caplog.at_level("DEBUG", logger="strix.tools.mcp.session"):
+    with caplog.at_level("DEBUG", logger="airaider.tools.mcp.session"):
         out = await call_mcp.on_invoke_tool(
             _ctx(registry), json.dumps({"connection": "fs", "tool": "read_file"})
         )
@@ -1598,7 +1598,7 @@ async def test_session_on_dead_fires_once_on_the_death_transition(
     session.set_on_dead(lambda: fires.append(1))
 
     clock = [100.0]
-    monkeypatch.setattr("strix.tools.mcp.session.time.monotonic", lambda: clock[0])
+    monkeypatch.setattr("airaider.tools.mcp.session.time.monotonic", lambda: clock[0])
     monkeypatch.setattr(mcp_session_mod, "_retry_delay", lambda _attempt, _retry_after: 0)
 
     async def no_sleep(_delay: float) -> None:

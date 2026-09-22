@@ -7,7 +7,7 @@ from typing import Any
 
 from agents.usage import Usage, deserialize_usage, serialize_usage
 
-from strix.report.pricing import resolve_litellm_model
+from airaider.report.pricing import resolve_litellm_model
 
 
 logger = logging.getLogger(__name__)

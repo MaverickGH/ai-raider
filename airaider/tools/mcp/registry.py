@@ -9,14 +9,14 @@ dispatch tools: ``list_mcps`` to discover the available connections, ``describe_
 to learn one connection's tool schemas on demand, and ``call_mcp`` to run one of
 its tools.
 
-One :class:`McpRegistry` is built per run in :mod:`strix.core.runner`, stored in
+One :class:`McpRegistry` is built per run in :mod:`airaider.core.runner`, stored in
 the run context under :data:`MCP_REGISTRY_CONTEXT_KEY`, and shared by the root
 agent and every child (the child context is a copy of the parent's, so it
 carries the same registry object).
 
-strix-pro imports :class:`McpRegistry` to add its cloud connections into the
+airaider-pro imports :class:`McpRegistry` to add its cloud connections into the
 same registry and to attach a per-connection ``result_transform`` (its
-sanitizer), which :func:`strix.tools.mcp.client.dispatch_mcp_call` applies at the
+sanitizer), which :func:`airaider.tools.mcp.client.dispatch_mcp_call` applies at the
 single dispatch point.
 """
 
@@ -25,19 +25,19 @@ from __future__ import annotations
 import dataclasses
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from strix.tools.mcp.session import SupervisedMcpSession
+from airaider.tools.mcp.session import SupervisedMcpSession
 
 
 if TYPE_CHECKING:
     from agents.mcp import MCPServer
 
-    from strix.tools.mcp.client import ResultTransform
-    from strix.tools.mcp.config import McpConnectionConfig
+    from airaider.tools.mcp.client import ResultTransform
+    from airaider.tools.mcp.config import McpConnectionConfig
 
 
 # The run-context key under which the runner stores the per-run registry, and
 # the two dispatch tools read it back. Kept here so the tools, the runner, and
-# strix-pro all agree on one name.
+# airaider-pro all agree on one name.
 MCP_REGISTRY_CONTEXT_KEY = "mcp_registry"
 
 
@@ -45,7 +45,7 @@ MCP_REGISTRY_CONTEXT_KEY = "mcp_registry"
 # MCP connection. ``call_mcp`` runs one tool on a connection; ``describe_mcp``
 # lists a connection's tool schemas. (``list_mcps`` is deliberately not here: it
 # names no single connection, so it renders as an ordinary tool call.) Kept here
-# (not in the interface layer) so the engine, the OSS viewer, and strix-pro's
+# (not in the interface layer) so the engine, the OSS viewer, and airaider-pro's
 # tracer all recognise a connection-scoped dispatch call by the same names.
 CALL_MCP_TOOL = "call_mcp"
 DESCRIBE_MCP_TOOL = "describe_mcp"
@@ -56,7 +56,7 @@ MCP_DISPATCH_TOOLS = frozenset({CALL_MCP_TOOL, DESCRIBE_MCP_TOOL})
 class McpConnectionEntry:
     """One live MCP connection a scan may reach, keyed by ``name``.
 
-    ``session`` is the :class:`~strix.tools.mcp.session.SupervisedMcpSession` that
+    ``session`` is the :class:`~airaider.tools.mcp.session.SupervisedMcpSession` that
     owns the connection on its own task; the dispatch tools list tools and call
     tools through it (``session.list_tools`` / ``session.dispatch``) so a session
     failure is contained and can reconnect. ``purpose`` is the human label
@@ -64,7 +64,7 @@ class McpConnectionEntry:
     notes, or whatever the caller supplies). ``tool_count`` is how many tools the
     connection offers, also reported by ``list_mcps``. ``result_transform``, when
     set, runs on each call's structured result at the single dispatch point
-    (strix-pro's sanitizer uses it). ``provider`` is an optional source label
+    (airaider-pro's sanitizer uses it). ``provider`` is an optional source label
     (e.g. ``"supabase"``) the caller tags the connection with; the command-line
     path leaves it ``None``, and event tagging surfaces it when set.
 
@@ -134,7 +134,7 @@ class McpConnectionRequest:
     owns connecting and cleaning up. ``provider`` is an optional source label
     (e.g. ``"supabase"``; empty for the command-line path). ``result_transform``
     is an optional per-connection transform run on each call's structured result
-    at the single dispatch point (strix-pro's sanitizer; empty for the
+    at the single dispatch point (airaider-pro's sanitizer; empty for the
     command-line path). ``purpose`` is the human label ``list_mcps`` reports as the
     connection's description; when unset it falls back to ``config.notes``.
     """
@@ -159,7 +159,7 @@ class McpRegistry:
     """Connection name -> live MCP connection, built per run and shared by every
     agent in the run.
 
-    Public API (strix-pro builds against it): the constructor, :meth:`add`,
+    Public API (airaider-pro builds against it): the constructor, :meth:`add`,
     :meth:`get`, and :meth:`summaries`.
     """
 
@@ -182,7 +182,7 @@ class McpRegistry:
 
         Pass ``session`` for a session the engine already supervises (the attach
         path does this). Pass ``server`` for an already-connected server the caller
-        owns (strix-pro's cloud sessions): it is adopted into a session that runs
+        owns (airaider-pro's cloud sessions): it is adopted into a session that runs
         calls inline against it, and reconnects only when a ``config`` is also
         given. Exactly one of ``session`` or ``server`` is required.
         """
@@ -257,7 +257,7 @@ def resolve_mcp_call(
 ) -> McpCallInfo | None:
     """Resolve one tool call to the MCP connection/tool/provider it went out to.
 
-    The single resolver both the OSS viewer and strix-pro's tracer read a
+    The single resolver both the OSS viewer and airaider-pro's tracer read a
     dispatch call through, so a call is attributed the same way everywhere. Every
     MCP call an agent makes goes through ``call_mcp`` or ``describe_mcp``, and the
     connection (and, for ``call_mcp``, the server's own tool name) ride in the

@@ -1,4 +1,4 @@
-"""StrixDockerSandboxClient — preserves the image's ENTRYPOINT and adds
+"""AiRaiderDockerSandboxClient — preserves the image's ENTRYPOINT and adds
 NET_ADMIN/NET_RAW capabilities + host-gateway.
 
 The SDK's ``DockerSandboxClient._create_container`` does not expose a hook for
@@ -51,7 +51,7 @@ from requests.exceptions import RequestException
 logger = logging.getLogger(__name__)
 
 
-_SANDBOX_NETWORK_ENV = "STRIX_DOCKER_SANDBOX_NETWORK"
+_SANDBOX_NETWORK_ENV = "AIRAIDER_DOCKER_SANDBOX_NETWORK"
 
 
 def _sandbox_network() -> str | None:
@@ -69,22 +69,22 @@ def _apply_sandbox_network(create_kwargs: dict[str, Any]) -> None:
 def _apply_resource_limits(create_kwargs: dict[str, Any]) -> None:
     """Apply optional cgroup resource caps from the environment. Unset/blank
     values leave docker's default (unbounded), so this is opt-in per host."""
-    mem_limit = os.environ.get("STRIX_SANDBOX_MEM_LIMIT", "").strip()
+    mem_limit = os.environ.get("AIRAIDER_SANDBOX_MEM_LIMIT", "").strip()
     if mem_limit:
         create_kwargs["mem_limit"] = mem_limit
 
-    shm_size = os.environ.get("STRIX_SANDBOX_SHM_SIZE", "").strip()
+    shm_size = os.environ.get("AIRAIDER_SANDBOX_SHM_SIZE", "").strip()
     if shm_size:
         create_kwargs["shm_size"] = shm_size
 
-    cpus = os.environ.get("STRIX_SANDBOX_CPUS", "").strip()
+    cpus = os.environ.get("AIRAIDER_SANDBOX_CPUS", "").strip()
     if cpus:
         with contextlib.suppress(ValueError, OverflowError):
             nano_cpus = int(float(cpus) * 1_000_000_000)
             if 0 < nano_cpus <= 2**63 - 1:
                 create_kwargs["nano_cpus"] = nano_cpus
 
-    pids_limit = os.environ.get("STRIX_SANDBOX_PIDS_LIMIT", "").strip()
+    pids_limit = os.environ.get("AIRAIDER_SANDBOX_PIDS_LIMIT", "").strip()
     if pids_limit:
         with contextlib.suppress(ValueError):
             create_kwargs["pids_limit"] = int(pids_limit)
@@ -98,12 +98,12 @@ def _apply_log_limits(create_kwargs: dict[str, Any]) -> None:
     Unlike the cgroup caps above, this defaults **on** — docker's own default
     is an unbounded json-file, which is unsafe for an autonomous agent that
     executes arbitrary commands. ``max-file`` rotation means the on-disk cap is
-    ``max-size * max-file``. Set ``STRIX_SANDBOX_LOG_MAX_SIZE`` to ``0``/``off``
+    ``max-size * max-file``. Set ``AIRAIDER_SANDBOX_LOG_MAX_SIZE`` to ``0``/``off``
     to opt back out to docker's default."""
-    max_size = os.environ.get("STRIX_SANDBOX_LOG_MAX_SIZE", "50m").strip()
+    max_size = os.environ.get("AIRAIDER_SANDBOX_LOG_MAX_SIZE", "50m").strip()
     if max_size.lower() in ("0", "off", "none", "unlimited"):
         return
-    max_file = os.environ.get("STRIX_SANDBOX_LOG_MAX_FILE", "3").strip() or "3"
+    max_file = os.environ.get("AIRAIDER_SANDBOX_LOG_MAX_FILE", "3").strip() or "3"
     create_kwargs["log_config"] = LogConfig(
         type=LogConfig.types.JSON,
         config={"max-size": max_size, "max-file": max_file},
@@ -111,19 +111,19 @@ def _apply_log_limits(create_kwargs: dict[str, Any]) -> None:
 
 
 def _apply_run_labels(create_kwargs: dict[str, Any]) -> None:
-    run_id = os.getenv("STRIX_RUN_ID")
+    run_id = os.getenv("AIRAIDER_RUN_ID")
     if not run_id:
         return
     labels = create_kwargs.setdefault("labels", {})
     if not isinstance(labels, dict):
         return
-    labels["strix-run-id"] = run_id
-    run_type = os.getenv("STRIX_RUN_TYPE")
+    labels["airaider-run-id"] = run_id
+    run_type = os.getenv("AIRAIDER_RUN_TYPE")
     if run_type:
-        labels["strix-run-type"] = run_type
+        labels["airaider-run-type"] = run_type
 
 
-class StrixDockerSandboxSession(DockerSandboxSession):
+class AiRaiderDockerSandboxSession(DockerSandboxSession):
     sandbox_network: str = ""
 
     async def _resolve_exposed_port(self, port: int) -> ExposedPortEndpoint:
@@ -161,10 +161,10 @@ class StrixDockerSandboxSession(DockerSandboxSession):
         return ExposedPortEndpoint(host=host, port=port, tls=False)
 
 
-class StrixDockerSandboxClient(DockerSandboxClient):
+class AiRaiderDockerSandboxClient(DockerSandboxClient):
     # Host directories to bind-mount into the container, set by the docker
     # backend before ``create()``. Each item is ``{source, target, read_only}``.
-    strix_bind_mounts: list[dict[str, Any]] | None = None
+    airaider_bind_mounts: list[dict[str, Any]] | None = None
 
     async def _create_container(
         self,
@@ -184,7 +184,7 @@ class StrixDockerSandboxClient(DockerSandboxClient):
         environment: dict[str, str] | None = None
         if manifest:
             environment = await manifest.environment.resolve()
-        # Strix delta from the SDK body: drop ``entrypoint`` override and
+        # AiRaider delta from the SDK body: drop ``entrypoint`` override and
         # supply ``tail -f /dev/null`` as ``command`` so the image's
         # ENTRYPOINT (``docker-entrypoint.sh``) runs setup, then ``exec
         # "$@"`` becomes ``exec tail -f /dev/null`` for the keep-alive.
@@ -220,7 +220,7 @@ class StrixDockerSandboxClient(DockerSandboxClient):
             }
         # ----- END VERBATIM COPY -----
 
-        # Strix injections — append, don't overwrite, so FUSE/SYS_ADMIN survives.
+        # AiRaider injections — append, don't overwrite, so FUSE/SYS_ADMIN survives.
         cap_add = create_kwargs.setdefault("cap_add", [])
         if not isinstance(cap_add, list):
             cap_add = list(cap_add)
@@ -237,9 +237,9 @@ class StrixDockerSandboxClient(DockerSandboxClient):
         _apply_log_limits(create_kwargs)
         _apply_run_labels(create_kwargs)
 
-        # Strix injection: local source trees, sorted shallowest-first so a
+        # AiRaider injection: local source trees, sorted shallowest-first so a
         # nested spec lands on top of the tree it covers.
-        bind_mounts = self.strix_bind_mounts or ()
+        bind_mounts = self.airaider_bind_mounts or ()
         if bind_mounts:
             mounts = create_kwargs.setdefault("mounts", [])
             for spec in sorted(bind_mounts, key=lambda s: str(s["target"]).count("/")):
@@ -271,8 +271,8 @@ class StrixDockerSandboxClient(DockerSandboxClient):
         network = _sandbox_network()
         inner = session._inner
         if network and isinstance(inner, DockerSandboxSession):
-            inner.__class__ = StrixDockerSandboxSession
-            cast("StrixDockerSandboxSession", inner).sandbox_network = network
+            inner.__class__ = AiRaiderDockerSandboxSession
+            cast("AiRaiderDockerSandboxSession", inner).sandbox_network = network
         return session
 
     async def delete(self, session: SandboxSession) -> SandboxSession:

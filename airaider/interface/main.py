@@ -13,37 +13,37 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from strix.config import codex, load_settings, persist_current
-from strix.core.paths import run_dir_for
-from strix.interface.cli_args import parse_arguments
-from strix.interface.environment import (
+from airaider.config import codex, load_settings, persist_current
+from airaider.core.paths import run_dir_for
+from airaider.interface.cli_args import parse_arguments
+from airaider.interface.environment import (
     check_docker_installed,
     pull_docker_image,
     validate_environment,
 )
-from strix.interface.interactive import (
+from airaider.interface.interactive import (
     InteractiveSetupUnavailableError,
     run_tui,
 )
-from strix.interface.scan_setup import (
+from airaider.interface.scan_setup import (
     ModelConnectionError,
     preflight_model_connection,
     prepare_run,
     telemetry_start,
 )
-from strix.interface.update_check import (
+from airaider.interface.update_check import (
     is_binary_install,
     notify_update,
     prompt_update_if_available,
     restart_after_update,
     start_background_check,
 )
-from strix.interface.utils import (
+from airaider.interface.utils import (
     build_final_stats_text,
 )
-from strix.llm.warmup import start_import_warmup, wait_for_import_warmup
-from strix.telemetry import posthog, report_error, scarf, set_scan_phase
-from strix.telemetry.logging import configure_dependency_logging
+from airaider.llm.warmup import start_import_warmup, wait_for_import_warmup
+from airaider.telemetry import posthog, report_error, scarf, set_scan_phase
+from airaider.telemetry.logging import configure_dependency_logging
 
 
 BEDROCK_MODEL_PREFIX = "bedrock/"
@@ -65,7 +65,6 @@ logger = logging.getLogger(__name__)
 
 _ROOT_SUBCOMMAND_HELP = """
 Additional commands:
-  ai-raider cloud ...      Use the managed cloud platform
   ai-raider auth ...           Manage model-subscription sign-in
   ai-raider view [RUN]         View a completed or running scan
   ai-raider completions SHELL  Generate zsh, bash, or fish tab completion
@@ -138,13 +137,13 @@ def _subscription_error_hint(exc: BaseException) -> str | None:
 async def warm_up_llm(show_model_warning: bool = True) -> None:
     from agents.models.interface import ModelTracing
 
-    from strix.config.models import (
+    from airaider.config.models import (
         RECOMMENDED_MODEL_NAMES,
         configure_sdk_model_defaults,
         is_known_openai_bare_model,
         is_recommended_or_frontier_model,
     )
-    from strix.core.inputs import make_model_settings
+    from airaider.core.inputs import make_model_settings
 
     console = Console()
     logger.info("Warming up LLM connection")
@@ -216,7 +215,7 @@ async def warm_up_llm(show_model_warning: bool = True) -> None:
         logger.info("LLM warm-up succeeded for model %s", (llm.model or "").strip())
 
         if settings.dedupe.model:
-            from strix.report.dedupe import resolve_dedupe_model
+            from airaider.report.dedupe import resolve_dedupe_model
 
             dedupe_model = settings.dedupe.model.strip()
             raw_model = dedupe_model
@@ -258,7 +257,7 @@ async def warm_up_llm(show_model_warning: bool = True) -> None:
 
 
 def display_completion_message(args: argparse.Namespace, results_path: Path) -> None:
-    from strix.report.state import get_global_report_state
+    from airaider.report.state import get_global_report_state
 
     console = Console()
     report_state = get_global_report_state()
@@ -310,7 +309,7 @@ def display_completion_message(args: argparse.Namespace, results_path: Path) -> 
         resume_text.append("\n")
         resume_text.append("Resume", style="dim")
         resume_text.append("  ")
-        resume_text.append(f"strix --resume {args.run_name}", style="#22c55e")
+        resume_text.append(f"airaider --resume {args.run_name}", style="#22c55e")
         panel_parts.extend(["\n", resume_text])
 
     panel_content = Text.assemble(*panel_parts)
@@ -427,7 +426,7 @@ def main() -> None:
     # `ai-raider view [<run>]` is a viewer-only subcommand, dispatched before the
     # scan argument parser (which requires a target) and before any scan setup.
     if len(sys.argv) > 1 and sys.argv[1] == "view":
-        from strix.interface.viewer.cli import run_view
+        from airaider.interface.viewer.cli import run_view
 
         run_view(sys.argv[2:])
         return
@@ -435,22 +434,15 @@ def main() -> None:
     # `ai-raider auth …` manages model-subscription sign-in and exits; it needs no
     # target, Docker, or scan setup.
     if len(sys.argv) > 1 and sys.argv[1] == "auth":
-        from strix.interface.auth_cli import run_auth
+        from airaider.interface.auth_cli import run_auth
 
         sys.exit(run_auth(sys.argv[2:]))
 
     # Generate native shell completion scripts before scan argument parsing.
     if len(sys.argv) > 1 and sys.argv[1] in ("completion", "completions"):
-        from strix.interface.completions import run_completions
+        from airaider.interface.completions import run_completions
 
         sys.exit(run_completions(sys.argv[2:]))
-
-    # `ai-raider cloud …` drives the managed platform (app.strix.ai) and exits;
-    # it needs no target, Docker, or scan setup.
-    if len(sys.argv) > 1 and sys.argv[1] == "cloud":
-        from strix.interface.cloud import run_cloud
-
-        sys.exit(run_cloud(sys.argv[2:]))
 
     start_import_warmup()
 
@@ -472,12 +464,12 @@ def main() -> None:
     if args.non_interactive:
         _bootstrap_scan(args)
 
-    from strix.report.state import get_global_report_state
+    from airaider.report.state import get_global_report_state
 
     exit_reason = "user_exit"
     try:
         if args.non_interactive:
-            from strix.interface.cli import run_cli
+            from airaider.interface.cli import run_cli
 
             asyncio.run(run_cli(args))
             # Headless runs have no user to quit: the agent either finished

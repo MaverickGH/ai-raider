@@ -1,4 +1,4 @@
-"""Stable, privacy-safe identity for this Strix CLI installation."""
+"""Stable, privacy-safe identity for this AiRaider CLI installation."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 from uuid import uuid4
 
-from strix.utils.secret_files import write_secret_text
+from airaider.utils.secret_files import write_secret_text
 
 
 IDENTITY_PATH = Path.home() / ".ai-raider" / "cli-identity.json"

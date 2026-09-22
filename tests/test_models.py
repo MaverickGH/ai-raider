@@ -10,9 +10,9 @@ from agents.models import _openai_shared
 from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
 from agents.models.openai_responses import OpenAIResponsesModel
 
-from strix.config.models import (
+from airaider.config.models import (
     RECOMMENDED_MODEL_NAMES,
-    StrixProvider,
+    AiRaiderProvider,
     _NonStreamingModel,
     _TurnGuardModel,
     configure_sdk_model_defaults,
@@ -22,7 +22,7 @@ from strix.config.models import (
     supports_strict_tool_schemas,
     uses_chat_completions_tool_schema,
 )
-from strix.config.settings import Settings
+from airaider.config.settings import Settings
 
 
 @pytest.mark.parametrize("model_name", RECOMMENDED_MODEL_NAMES)
@@ -157,7 +157,7 @@ def test_other_routes_keep_strict_tool_schemas(model_name: str) -> None:
 def test_routes_through_litellm_matches_the_provider(
     monkeypatch: pytest.MonkeyPatch, model_name: str, litellm: bool
 ) -> None:
-    """The helper must agree with what StrixProvider actually builds.
+    """The helper must agree with what AiRaiderProvider actually builds.
 
     Callers use it to decide whether a LiteLLM-only request field is safe to
     attach; on the SDK's own clients such a field raises TypeError mid-turn, so
@@ -166,7 +166,7 @@ def test_routes_through_litellm_matches_the_provider(
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     assert routes_through_litellm(model_name) is litellm
     try:
-        model = StrixProvider().get_model(model_name)
+        model = AiRaiderProvider().get_model(model_name)
     except ImportError:
         # any-llm's client is an optional dependency; reaching it at all already
         # proves the route is not LiteLLM's.
@@ -178,13 +178,13 @@ def test_routes_through_litellm_matches_the_provider(
 
 
 def test_api_type_override_settings(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("STRIX_LLM", "gpt-4")
-    monkeypatch.setenv("STRIX_API_TYPE", "chat_completions")
+    monkeypatch.setenv("AIRAIDER_LLM", "gpt-4")
+    monkeypatch.setenv("AIRAIDER_API_TYPE", "chat_completions")
     assert uses_chat_completions_tool_schema("gpt-4", Settings()) is True
-    monkeypatch.setenv("STRIX_LLM", "openai/gpt-4")
-    monkeypatch.setenv("STRIX_API_TYPE", "responses")
+    monkeypatch.setenv("AIRAIDER_LLM", "openai/gpt-4")
+    monkeypatch.setenv("AIRAIDER_API_TYPE", "responses")
     assert uses_chat_completions_tool_schema("openai/gpt-4", Settings()) is False
-    monkeypatch.setenv("STRIX_LLM", "anthropic/claude-sonnet-4-5")
+    monkeypatch.setenv("AIRAIDER_LLM", "anthropic/claude-sonnet-4-5")
     assert uses_chat_completions_tool_schema("anthropic/claude-sonnet-4-5", Settings()) is True
 
 
@@ -199,7 +199,7 @@ def test_api_type_override_settings(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_api_type_overrides_the_api_base_route(
     monkeypatch: pytest.MonkeyPatch, api_type: str | None, expected: type
 ) -> None:
-    """``LLM_API_BASE`` defaults to chat completions. ``STRIX_API_TYPE`` must win."""
+    """``LLM_API_BASE`` defaults to chat completions. ``AIRAIDER_API_TYPE`` must win."""
     monkeypatch.setattr(_openai_shared, "_use_responses_by_default", True)
     monkeypatch.setattr(_openai_shared, "_default_openai_client", None)
     monkeypatch.setattr(_openai_shared, "_default_openai_key", None)
@@ -207,14 +207,14 @@ def test_api_type_overrides_the_api_base_route(
     monkeypatch.setattr(litellm, "api_base", None)
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.setenv("OPENAI_BASE_URL", "")
-    monkeypatch.setenv("STRIX_LLM", "gpt-5")
+    monkeypatch.setenv("AIRAIDER_LLM", "gpt-5")
     monkeypatch.setenv("LLM_API_KEY", "test-key")
     monkeypatch.setenv("LLM_API_BASE", "https://gateway.example/v1")
-    monkeypatch.delenv("STRIX_API_TYPE", raising=False)
+    monkeypatch.delenv("AIRAIDER_API_TYPE", raising=False)
     if api_type is not None:
-        monkeypatch.setenv("STRIX_API_TYPE", api_type)
+        monkeypatch.setenv("AIRAIDER_API_TYPE", api_type)
     configure_sdk_model_defaults(Settings())
-    model = StrixProvider().get_model("gpt-5")
+    model = AiRaiderProvider().get_model("gpt-5")
     while isinstance(model, _NonStreamingModel | _TurnGuardModel):
         model = model._inner
     assert isinstance(model, expected)

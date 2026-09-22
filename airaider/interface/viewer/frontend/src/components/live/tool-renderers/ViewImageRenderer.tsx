@@ -20,7 +20,7 @@ function extractImageDataUri(res: unknown): string | null {
   return `data:image/${m[1]};base64,${m[2]}`;
 }
 
-/** Renders the view_image result as an inline image, like the strix-app
+/** Renders the view_image result as an inline image, like the airaider-app
  *  renderer; falls back to the load-error text when there is no payload. */
 export default function ViewImageRenderer({ args, result }: ToolRendererProps) {
   const path = ((args.path as string) ?? "").trim();

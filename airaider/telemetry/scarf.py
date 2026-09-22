@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 
-from strix.config import load_settings
-from strix.skills import get_loaded_skill_names
-from strix.telemetry._common import (
+from airaider.config import load_settings
+from airaider.skills import get_loaded_skill_names
+from airaider.telemetry._common import (
     SEND_TIMEOUT,
     SESSION_ID,
     base_props,
@@ -20,12 +20,12 @@ from strix.telemetry._common import (
 
 
 if TYPE_CHECKING:
-    from strix.report.state import ReportState
+    from airaider.report.state import ReportState
 
 
 logger = logging.getLogger(__name__)
 
-_SCARF_ENDPOINT = "https://strix.gateway.scarf.sh"
+_SCARF_ENDPOINT = "https://airaider.gateway.scarf.sh"
 
 
 def _is_enabled() -> bool:
@@ -38,7 +38,7 @@ def _send(event: str, properties: dict[str, Any]) -> bool:
         return False
     try:
         props = dict(properties)
-        version = str(props.pop("strix_version", get_version()) or "unknown")
+        version = str(props.pop("airaider_version", get_version()) or "unknown")
         path = f"/{urllib.parse.quote(event, safe='')}/{urllib.parse.quote(version, safe='')}"
         query = urllib.parse.urlencode(
             {k: ("" if v is None else str(v)) for k, v in props.items()},

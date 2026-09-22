@@ -16,7 +16,7 @@ const STRIP_PATTERNS: RegExp[] = [
 ];
 
 // Terminal-tool chunk metadata (the OSS engine's shell tool prepends these; the
-// TUI strips them in strix/interface/tui/renderers/shell_renderer.py). Only a
+// TUI strips them in airaider/interface/tui/renderers/shell_renderer.py). Only a
 // contiguous block anchored on a "Chunk ID:" line is stripped, so identical
 // text inside real command output is left untouched.
 const CHUNK_PREAMBLE_START = /^Chunk ID: [0-9a-f]+\s*$/;
@@ -65,16 +65,16 @@ function cleanOutput(raw: string, command: string = ""): string {
     for (const line of lines) {
       // Skip leading blank lines
       if (filtered.length === 0 && !line.trim()) continue;
-      // Skip [STRIX_N]$ prompt lines
-      if (/^\[STRIX_\d+\]\$\s*/.test(line)) continue;
+      // Skip [AIRAIDER_N]$ prompt lines
+      if (/^\[AIRAIDER_\d+\]\$\s*/.test(line)) continue;
       // Skip echoed command (plain)
       if (command && line.trim() === command.trim()) continue;
       // Skip echoed command with $/#/> prefix
       if (command && new RegExp(`^[\\$#>]\\s*${escapeRegex(command.trim())}\\s*$`).test(line)) continue;
       filtered.push(line);
     }
-    // Strip trailing [STRIX_N]$ lines
-    while (filtered.length > 0 && /^\[STRIX_\d+\]\$\s*/.test(filtered[filtered.length - 1])) {
+    // Strip trailing [AIRAIDER_N]$ lines
+    while (filtered.length > 0 && /^\[AIRAIDER_\d+\]\$\s*/.test(filtered[filtered.length - 1])) {
       filtered.pop();
     }
     cleaned = filtered.join("\n");

@@ -9,9 +9,9 @@ from typing import Any
 
 import pytest
 
-from strix.core.inputs import build_root_task, build_scope_context
-from strix.interface.scan_setup import build_targets_info
-from strix.interface.utils import infer_target_type, stage_api_specs
+from airaider.core.inputs import build_root_task, build_scope_context
+from airaider.interface.scan_setup import build_targets_info
+from airaider.interface.utils import infer_target_type, stage_api_specs
 
 
 OPENAPI = {

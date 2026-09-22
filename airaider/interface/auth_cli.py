@@ -21,7 +21,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from strix.config import codex, load_settings
+from airaider.config import codex, load_settings
 
 
 if TYPE_CHECKING:
@@ -297,7 +297,7 @@ def _print_success(console: Console) -> None:
     text.append(") — runs are billed to your ChatGPT plan.", style="white")
     text.append("\n\n", style="white")
     text.append("Run a scan as usual, e.g. ", style="white")
-    text.append("strix --target https://example.com", style="bold cyan")
+    text.append("airaider --target https://example.com", style="bold cyan")
     console.print()
     console.print(
         Panel(
@@ -315,11 +315,11 @@ _LOGO_PATH = Path(__file__).resolve().parent.parent / "viewer" / "static" / "log
 
 
 def _logo_img_tag() -> str:
-    """Return an ``<img>`` for the Strix logo as an inline data URI, or "".
+    """Return an ``<img>`` for the AiRaider logo as an inline data URI, or "".
 
     The callback page is served offline by the local OAuth server, so the logo
     is embedded rather than linked. Missing/unreadable file degrades to just the
-    "Strix" wordmark.
+    "AiRaider" wordmark.
     """
     try:
         data = _LOGO_PATH.read_bytes()
@@ -336,7 +336,7 @@ def _render_callback_html() -> str:
 _CALLBACK_HTML = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Strix — signed in</title>
+<title>AiRaider — signed in</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -390,26 +390,26 @@ _CALLBACK_HTML = """<!doctype html>
   .close { margin: 24px 0 0; color: #5a5a5a; font-size: .78rem; text-align: center; }
 </style></head>
 <body>
-  <a class="topbar" href="https://strix.ai" target="_blank" rel="noopener"
-     aria-label="Strix — strix.ai">
+  <a class="topbar" href="https://github.com/MaverickGH/ai-raider" target="_blank" rel="noopener"
+     aria-label="AiRaider">
     <!--LOGO-->
-    <span>Strix</span>
+    <span>AiRaider</span>
   </a>
-  <div class="brand">Strix</div>
+  <div class="brand">AiRaider</div>
   <h1>You're signed in</h1>
   <main class="card">
     <div class="badge">✓</div>
-    <p class="msg">Strix is connected to your ChatGPT subscription. Head back to your
+    <p class="msg">AiRaider is connected to your ChatGPT subscription. Head back to your
       terminal — your security test runs there.</p>
     <div class="rule"></div>
     <p class="tagline">Autonomous AI hackers that <b>find and fix</b> your app's
       vulnerabilities.</p>
     <nav class="links">
-      <a href="https://strix.ai" target="_blank" rel="noopener">strix.ai</a>
+      <a href="https://github.com/MaverickGH/ai-raider" target="_blank" rel="noopener">github.com/MaverickGH/ai-raider</a>
       <span class="dot">·</span>
-      <a href="https://docs.strix.ai" target="_blank" rel="noopener">docs</a>
+      <a href="https://github.com/MaverickGH/ai-raider#readme" target="_blank" rel="noopener">docs</a>
       <span class="dot">·</span>
-      <a href="https://discord.gg/strix-ai" target="_blank" rel="noopener">community</a>
+      <a href="https://discord.gg/airaider-ai" target="_blank" rel="noopener">community</a>
     </nav>
   </main>
   <p class="close">You can close this tab.</p>

@@ -10,13 +10,13 @@ from typing import TYPE_CHECKING, Any
 from agents.models.interface import ModelTracing
 from openai.types.responses import ResponseOutputMessage
 
-from strix.config import load_settings
-from strix.config.models import (
-    StrixProvider,
+from airaider.config import load_settings
+from airaider.config.models import (
+    AiRaiderProvider,
     configure_sdk_model_defaults,
 )
-from strix.core.inputs import make_model_settings
-from strix.report.state import get_global_report_state
+from airaider.core.inputs import make_model_settings
+from airaider.report.state import get_global_report_state
 
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from agents.model_settings import ModelSettings
     from agents.models.interface import Model
 
-    from strix.config.settings import DedupeSettings
+    from airaider.config.settings import DedupeSettings
 
 
 logger = logging.getLogger(__name__)
@@ -59,8 +59,8 @@ def resolve_dedupe_model(dedupe: DedupeSettings, model_name: str) -> Model:
     api_key = (dedupe.api_key or "").strip() if dedupe.model else ""
     api_base = (dedupe.api_base or "").strip() if dedupe.model else ""
     if not (api_key or api_base):
-        return StrixProvider().get_model(model_name)
-    return StrixProvider(api_key=api_key or None, base_url=api_base or None).get_model(model_name)
+        return AiRaiderProvider().get_model(model_name)
+    return AiRaiderProvider(api_key=api_key or None, base_url=api_base or None).get_model(model_name)
 
 
 DEDUPE_SYSTEM_PROMPT = """You are an expert vulnerability report deduplication judge.

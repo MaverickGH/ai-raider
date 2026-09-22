@@ -1,6 +1,6 @@
 ---
 title: "Contributing"
-description: "Contribute to Strix development"
+description: "Contribute to AiRaider development"
 ---
 
 ## Development Setup
@@ -19,7 +19,7 @@ description: "Contribute to Strix development"
   <Step title="Clone the repository">
     ```bash
     git clone https://github.com/usestrix/strix.git
-    cd strix
+    cd airaider
     ```
   </Step>
   <Step title="Install dependencies">
@@ -33,20 +33,20 @@ description: "Contribute to Strix development"
   </Step>
   <Step title="Configure LLM">
     ```bash
-    export STRIX_LLM="openrouter/z-ai/glm-5.3"
+    export AIRAIDER_LLM="openrouter/z-ai/glm-5.3"
     export LLM_API_KEY="your-api-key"
     ```
   </Step>
-  <Step title="Run Strix">
+  <Step title="Run AiRaider">
     ```bash
-    uv run strix --target https://example.com
+    uv run airaider --target https://example.com
     ```
   </Step>
 </Steps>
 
 ## Contributing Skills
 
-Skills are specialized knowledge packages that enhance agent capabilities. They live in `strix/skills/`
+Skills are specialized knowledge packages that enhance agent capabilities. They live in `airaider/skills/`
 
 ### Creating a Skill
 
@@ -87,8 +87,8 @@ make wheel
 ```
 
 The build hook (`scripts/tui_sidecar_hook.py`) requires Go 1.24.x or newer, embeds
-the sidecar as `strix/bin/strix-tui`, and assigns the current platform tag.
-Frozen releases built by `scripts/build.sh` and `strix.spec` also require the
+the sidecar as `airaider/bin/airaider-tui`, and assigns the current platform tag.
+Frozen releases built by `scripts/build.sh` and `airaider.spec` also require the
 sidecar.
 
 ## Reporting Issues
@@ -96,7 +96,7 @@ sidecar.
 Include:
 
 - Python version and OS
-- Strix version (`strix --version`)
+- AiRaider version (`airaider --version`)
 - LLM being used
 - Full error traceback
 - Steps to reproduce
@@ -104,7 +104,7 @@ Include:
 ## Community
 
 <CardGroup cols={2}>
-  <Card title="Discord" icon="discord" href="https://discord.gg/strix-ai">
+  <Card title="Discord" icon="discord" href="https://discord.gg/airaider-ai">
     Join the community for help and discussion.
   </Card>
   <Card title="GitHub Issues" icon="github" href="https://github.com/usestrix/strix/issues">

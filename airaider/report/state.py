@@ -10,19 +10,19 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, cast
 from uuid import uuid4
 
-from strix.config import codex
-from strix.config.loader import load_settings
-from strix.core.paths import run_dir_for, runtime_state_dir
-from strix.report.coverage import write_coverage
-from strix.report.pricing import resolve_litellm_model
-from strix.report.sarif import write_sarif
-from strix.report.writer import (
+from airaider.config import codex
+from airaider.config.loader import load_settings
+from airaider.core.paths import run_dir_for, runtime_state_dir
+from airaider.report.coverage import write_coverage
+from airaider.report.pricing import resolve_litellm_model
+from airaider.report.sarif import write_sarif
+from airaider.report.writer import (
     read_run_record,
     write_executive_report,
     write_run_record,
     write_vulnerabilities,
 )
-from strix.telemetry import posthog, scarf
+from airaider.telemetry import posthog, scarf
 
 
 if TYPE_CHECKING:
@@ -36,10 +36,10 @@ _global_report_state: Optional["ReportState"] = None
 _CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]+")
 
 
-def _strix_version() -> str | None:
+def _airaider_version() -> str | None:
     """Best-effort package version for the SARIF tool.driver.version field."""
     try:
-        return version("strix-agent")
+        return version("airaider-agent")
     except PackageNotFoundError:
         return None
 
@@ -179,7 +179,7 @@ class ReportState:
     """Per-scan product artifact state plus artifact writer.
 
     The Agents SDK owns model/tool execution, tracing, and conversation
-    persistence. This store keeps only Strix-owned scan artifacts and
+    persistence. This store keeps only AiRaider-owned scan artifacts and
     report metadata. Live UI projections belong to the interface layer.
 
     It does not consume SDK tracing processors.
@@ -199,7 +199,7 @@ class ReportState:
         self.scan_config: dict[str, Any] | None = None
         # Imported here so importing this module never enters the agents SDK
         # package (which the warm-up thread may be initializing concurrently).
-        from strix.report.usage import LLMUsageLedger
+        from airaider.report.usage import LLMUsageLedger
 
         self._llm_usage = LLMUsageLedger()
         self._telemetry_llm_usage_baseline: dict[str, Any] = {}
@@ -684,8 +684,8 @@ class ReportState:
         into :meth:`_save_artifacts`.
         """
         try:
-            from strix.report.coverage import build_coverage_document, read_agent_graph
-            from strix.tools.coverage.tools import get_coverage_entries
+            from airaider.report.coverage import build_coverage_document, read_agent_graph
+            from airaider.tools.coverage.tools import get_coverage_entries
 
             return build_coverage_document(
                 run_record=self.run_record,
@@ -727,7 +727,7 @@ class ReportState:
                 write_sarif(
                     run_dir,
                     self.vulnerability_reports,
-                    tool_version=_strix_version(),
+                    tool_version=_airaider_version(),
                     repository_context=self._sarif_repository_context(),
                     coverage=coverage,
                 )
@@ -833,7 +833,7 @@ class StreamedOpenRouterCosts:
     LiteLLM rebuilds streamed responses from token-only chunks and drops the
     ``usage.cost`` OpenRouter reports in its final stream chunk (its non-streamed
     path preserves it; streaming snapshots hidden params at stream start). Every
-    scan streams, so the OpenRouter streaming handler (see strix.config.models)
+    scan streams, so the OpenRouter streaming handler (see airaider.config.models)
     records the cost here keyed by response id, and the callback takes it back out
     for the matching rebuilt response. Entries are removed on read; ``clear()``
     runs per scan so nothing accumulates across runs.

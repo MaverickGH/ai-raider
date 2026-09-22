@@ -12,11 +12,11 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 
-from strix.config import load_settings
-from strix.config.settings import DEFAULT_MAX_TURNS
-from strix.core.runner import run_strix_scan
-from strix.report.state import ReportState, set_global_report_state
-from strix.runtime import session_manager
+from airaider.config import load_settings
+from airaider.config.settings import DEFAULT_MAX_TURNS
+from airaider.core.runner import run_airaider_scan
+from airaider.report.state import ReportState, set_global_report_state
+from airaider.runtime import session_manager
 
 from .utils import (
     build_live_stats_text,
@@ -33,7 +33,7 @@ def _resolve_sandbox_image() -> str:
     image = load_settings().runtime.image
     if not image:
         raise RuntimeError(
-            "strix_image is not configured. Set it in ~/.ai-raider/cli-config.json.",
+            "airaider_image is not configured. Set it in ~/.ai-raider/cli-config.json.",
         )
     return image
 
@@ -194,7 +194,7 @@ async def run_cli(args: Any) -> None:  # noqa: PLR0915
                     len(scan_config.get("targets") or []),
                     bool(getattr(args, "interactive", False)),
                 )
-                await run_strix_scan(
+                await run_airaider_scan(
                     scan_config=scan_config,
                     scan_id=args.run_name,
                     image=_resolve_sandbox_image(),

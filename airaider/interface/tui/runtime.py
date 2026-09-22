@@ -13,19 +13,19 @@ from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from strix.config import load_settings, persist_current
-from strix.core.agents import AgentCoordinator
-from strix.core.hooks import BudgetExceededError
-from strix.core.runner import run_strix_scan
-from strix.interface.scan_setup import (
+from airaider.config import load_settings, persist_current
+from airaider.core.agents import AgentCoordinator
+from airaider.core.hooks import BudgetExceededError
+from airaider.core.runner import run_airaider_scan
+from airaider.interface.scan_setup import (
     build_targets_info,
     preflight_model_connection,
     prepare_run,
     telemetry_start,
 )
-from strix.interface.tui.backend import TuiBackendServer, TuiController
-from strix.interface.tui.backend.live_view import TuiLiveView
-from strix.interface.tui.sidecar import (
+from airaider.interface.tui.backend import TuiBackendServer, TuiController
+from airaider.interface.tui.backend.live_view import TuiLiveView
+from airaider.interface.tui.sidecar import (
     check_return_code,
     child_environment,
     launch_tui_process,
@@ -35,10 +35,10 @@ from strix.interface.tui.sidecar import (
     tui_source_dir,
     wait_process,
 )
-from strix.interface.utils import read_workspace_files
-from strix.report.state import ReportState, set_global_report_state
-from strix.telemetry import report_error, set_scan_phase
-from strix.utils.resource_paths import get_strix_resource_path
+from airaider.interface.utils import read_workspace_files
+from airaider.report.state import ReportState, set_global_report_state
+from airaider.telemetry import report_error, set_scan_phase
+from airaider.utils.resource_paths import get_airaider_resource_path
 
 
 if TYPE_CHECKING:
@@ -233,9 +233,9 @@ class GoTuiRuntime:
             self.scan_task = asyncio.create_task(self._run_scan())
 
     async def _run_scan(self) -> None:
-        image = str(load_settings().runtime.image or "strix-sandbox:latest")
+        image = str(load_settings().runtime.image or "airaider-sandbox:latest")
         try:
-            await run_strix_scan(
+            await run_airaider_scan(
                 scan_config=self.scan_config,
                 scan_id=self.scan_config["run_name"],
                 image=image,
@@ -393,8 +393,8 @@ class GoTuiRuntime:
         # A checkout may also contain a stale wheel/build sidecar. Running the
         # current source is the deterministic development choice.
         if (source / "go.mod").is_file() and shutil.which("go"):
-            return ["go", "run", "./cmd/strix-tui"]
-        packaged = get_strix_resource_path("bin", tui_executable())
+            return ["go", "run", "./cmd/airaider-tui"]
+        packaged = get_airaider_resource_path("bin", tui_executable())
         if packaged.is_file():
             return [str(packaged)]
         raise RuntimeError(
@@ -426,7 +426,7 @@ class GoTuiRuntime:
         process: asyncio.subprocess.Process | subprocess.Popen[bytes] | None = None
         try:
             env = child_environment()
-            env["STRIX_VERSION"] = package_version()
+            env["AIRAIDER_VERSION"] = package_version()
             command = self.binary_command()
             cwd = str(tui_source_dir()) if command[:2] == ["go", "run"] else None
             if cwd is not None:

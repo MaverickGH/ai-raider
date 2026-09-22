@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/usestrix/strix/tui/internal/protocol"
-	"github.com/usestrix/strix/tui/internal/render"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/render"
 )
 
 type agentTreeEntry struct {

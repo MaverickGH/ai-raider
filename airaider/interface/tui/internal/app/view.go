@@ -10,8 +10,8 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/usestrix/strix/tui/internal/protocol"
-	"github.com/usestrix/strix/tui/internal/render"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/render"
 )
 
 // eventSpan records which content lines of the chat trace belong to an
@@ -253,7 +253,7 @@ func (m Model) viewInner() string {
 		return m.splashView()
 	}
 	if !m.ready {
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, lipgloss.NewStyle().Foreground(dim).Render("Connecting to Strix…"), lipgloss.WithWhitespaceBackground(black))
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, lipgloss.NewStyle().Foreground(dim).Render("Connecting to AiRaider…"), lipgloss.WithWhitespaceBackground(black))
 	}
 	main := m.mainView()
 	if m.snapshot.SetupMode {
@@ -377,7 +377,7 @@ func fillBackground(view string) string {
 }
 
 func (m Model) splashView() string {
-	shine := "Starting Strix Agent"
+	shine := "Starting AiRaider Agent"
 	chars := []rune(shine)
 	pos := m.splashFrame % (len(chars) + 8)
 	var start strings.Builder
@@ -401,11 +401,11 @@ func (m Model) splashView() string {
 		start.WriteString(lipgloss.NewStyle().Foreground(color).Bold(bold).Render(string(char)))
 	}
 	welcome := lipgloss.NewStyle().Bold(true).Foreground(white).Render("Welcome to ") +
-		lipgloss.NewStyle().Bold(true).Foreground(green).Render("Strix") +
+		lipgloss.NewStyle().Bold(true).Foreground(green).Render("AiRaider") +
 		lipgloss.NewStyle().Bold(true).Foreground(white).Render("!")
 	version := lipgloss.NewStyle().Foreground(white).Faint(true).Render("v" + appVersion)
 	tagline := lipgloss.NewStyle().Foreground(white).Faint(true).Render("Open-source AI hackers for your apps")
-	url := lipgloss.NewStyle().Bold(true).Foreground(green).Render("strix.ai")
+	url := lipgloss.NewStyle().Bold(true).Foreground(green).Render("ai-raider")
 	// The wordmark is shared with the launch screen so the two read as one moment.
 	content := wordmark() + "\n\n" +
 		welcome + "\n" + version + "\n" + tagline + "\n\n" +

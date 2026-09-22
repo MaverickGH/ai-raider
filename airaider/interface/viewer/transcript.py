@@ -6,8 +6,8 @@ import json
 import logging
 from typing import TYPE_CHECKING, Any
 
-from strix.core.paths import run_record_path
-from strix.interface.tui.live_view import TuiLiveView
+from airaider.core.paths import run_record_path
+from airaider.interface.tui.live_view import TuiLiveView
 
 
 if TYPE_CHECKING:

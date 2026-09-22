@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ShieldCheck, X } from "lucide-react";
 
-const DISMISS_KEY = "strix_viewer_trust_dismissed";
+const DISMISS_KEY = "airaider_viewer_trust_dismissed";
 
 /**
  * One-time privacy notice, shown as a toast pinned over the sidebar. Dismissing

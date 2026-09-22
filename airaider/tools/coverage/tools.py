@@ -6,7 +6,7 @@ order to be trustworthy. Every agent records the surfaces it reviewed; the
 root agent reconciles them at the end of the scan.
 
 Entries here are **agent-reported**: an agent's own account of what it
-assessed. ``strix.report.coverage`` pairs them with machine-observed facts
+assessed. ``airaider.report.coverage`` pairs them with machine-observed facts
 (which agents ran, which skills they carried, how the run terminated) and
 labels the provenance of each, so a reader can tell a self-report from an
 observation. The runtime mirror under ``{state_dir}`` exists for resume; the

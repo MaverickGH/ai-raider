@@ -9,7 +9,7 @@ from typing import Any
 
 from agents import RunContextWrapper, function_tool
 
-from strix.core.agents import coordinator_from_context
+from airaider.core.agents import coordinator_from_context
 
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def _do_finish(
         return {"success": False, "error": "Validation failed", "errors": errors}
 
     try:
-        from strix.report.state import get_global_report_state
+        from airaider.report.state import get_global_report_state
 
         report_state = get_global_report_state()
         if report_state is None:
@@ -93,8 +93,8 @@ def _coverage_summary(agent_graph: dict[str, Any]) -> dict[str, Any]:
     can still dispatch work or record the class as unresolved instead of
     letting the report imply it was clean.
     """
-    from strix.report.coverage import agents_from_graph, skill_coverage_gaps
-    from strix.tools.coverage.tools import get_coverage_entries, outcome_counts
+    from airaider.report.coverage import agents_from_graph, skill_coverage_gaps
+    from airaider.tools.coverage.tools import get_coverage_entries, outcome_counts
 
     entries = get_coverage_entries()
     if not entries:

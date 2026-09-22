@@ -15,16 +15,16 @@ from typing import TYPE_CHECKING, Any
 from agents.sandbox.entries import BaseEntry, LocalDir
 from agents.sandbox.manifest import Environment, Manifest
 
-from strix.config import load_settings
-from strix.runtime.backends import backend_supports_bind_mounts, get_backend
-from strix.runtime.caido_bootstrap import bootstrap_caido
-from strix.runtime.caido_handle import CaidoBootstrapHandle
+from airaider.config import load_settings
+from airaider.runtime.backends import backend_supports_bind_mounts, get_backend
+from airaider.runtime.caido_bootstrap import bootstrap_caido
+from airaider.runtime.caido_handle import CaidoBootstrapHandle
 
 
 if TYPE_CHECKING:
     from agents.sandbox.session import BaseSandboxSession
 
-    from strix.runtime.status import StatusSink
+    from airaider.runtime.status import StatusSink
 
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ _PROTECTED_METADATA_NAMES = (".git", ".agents", ".codex")
 
 # Extra files travel as one tar archive: a single upload plus one extraction
 # inside the sandbox, instead of several round trips per file.
-_EXTRA_FILE_ARCHIVE_REL = ".strix-extra-files.tar"
+_EXTRA_FILE_ARCHIVE_REL = ".airaider-extra-files.tar"
 _EXTRA_FILE_ARCHIVE = f"{_WORKSPACE_ROOT}/{_EXTRA_FILE_ARCHIVE_REL}"
 _EXTRA_FILE_EXTRACT_TIMEOUT_S = 120
 _EXTRA_FILE_MODE = 0o644
@@ -58,7 +58,7 @@ def _host_identity_env() -> dict[str, str]:
         return {}
     # Bind-mount ownership only needs mapping on Linux, where the container uid
     # must match the host's.
-    return {"STRIX_HOST_UID": str(os.getuid()), "STRIX_HOST_GID": str(os.getgid())}
+    return {"AIRAIDER_HOST_UID": str(os.getuid()), "AIRAIDER_HOST_GID": str(os.getgid())}
 
 
 def build_bind_mounts(local_sources: list[dict[str, Any]]) -> list[dict[str, Any]]:

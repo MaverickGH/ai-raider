@@ -32,8 +32,8 @@ import McpRenderer from "./McpRenderer";
 /**
  * Tool-renderer mapping — data-driven, keyed by the engine's tool *family*.
  *
- * The OSS strix engine (usestrix/strix) is the source of truth for tool names:
- * see `strix/tools/**` for definitions and `strix/interface/tui/renderers/` for
+ * The OSS airaider engine (usestrix/strix) is the source of truth for tool names:
+ * see `airaider/tools/**` for definitions and `airaider/interface/tui/renderers/` for
  * the TUI equivalents of these components. Tools come in families that share a
  * React renderer + icon (terminal, proxy, notes, todos, …), so we describe each
  * family ONCE instead of repeating a row per tool name. A new tool that joins an
@@ -120,7 +120,7 @@ const CATEGORY_TOOLS: Record<ToolCategory, readonly string[]> = {
   thinking: ["think"],
   agents: ["create_agent", "agent_finish", "send_message_to_agent", "wait_for_agents", "view_agent_graph", "stop_agent"],
   search: ["web_search"],
-  // scan_start_info / subagent_start_info are strix-app synthetic events; finish_scan is the engine's
+  // scan_start_info / subagent_start_info are airaider-app synthetic events; finish_scan is the engine's
   lifecycle: ["scan_start_info", "subagent_start_info", "finish_scan", "respond_to_user"],
   notes: ["create_note", "delete_note", "update_note", "list_notes", "get_note"],
   skills: ["load_skill"],

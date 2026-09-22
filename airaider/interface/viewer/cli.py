@@ -9,15 +9,15 @@ from typing import TYPE_CHECKING
 
 from rich.console import Console
 
-from strix.core.paths import (
+from airaider.core.paths import (
     RUNS_DIR_NAME,
     latest_run_dir,
     run_dir_for,
     run_record_path,
     runs_base_dir,
 )
-from strix.interface.viewer.server import authorized_url, bundle_is_built, serve
-from strix.interface.viewer.transcript import read_run_summary
+from airaider.interface.viewer.server import authorized_url, bundle_is_built, serve
+from airaider.interface.viewer.transcript import read_run_summary
 
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 def run_view(argv: list[str]) -> None:
     parser = argparse.ArgumentParser(
         prog="ai-raider view",
-        description="Open a local web view of a Strix run (live or finished).",
+        description="Open a local web view of a AiRaider run (live or finished).",
     )
     parser.add_argument(
         "run",
@@ -62,7 +62,7 @@ def run_view(argv: list[str]) -> None:
     if not bundle_is_built():
         console.print(
             "[bold red]Viewer UI is not built.[/]\n"
-            "Build it with: [cyan]cd strix/interface/viewer/frontend && npm ci && npm run build[/]"
+            "Build it with: [cyan]cd airaider/interface/viewer/frontend && npm ci && npm run build[/]"
         )
         raise SystemExit(1)
 
@@ -83,7 +83,7 @@ def run_view(argv: list[str]) -> None:
     summary = read_run_summary(run_dir)
     live = not summary.get("finished", False)
 
-    from strix.telemetry import posthog
+    from airaider.telemetry import posthog
 
     posthog.viewer_opened(source="cli", live=live)
 

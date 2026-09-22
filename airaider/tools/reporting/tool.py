@@ -16,12 +16,12 @@ from typing import TYPE_CHECKING, Any
 
 from agents import RunContextWrapper, function_tool
 
-from strix.tools.nullish import clean_optional
-from strix.tools.proxy.tools import existing_request_ids
+from airaider.tools.nullish import clean_optional
+from airaider.tools.proxy.tools import existing_request_ids
 
 
 if TYPE_CHECKING:
-    from strix.report.state import ReportState
+    from airaider.report.state import ReportState
 
 
 logger = logging.getLogger(__name__)
@@ -639,7 +639,7 @@ def _do_update(
     if rejection is not None:
         return rejection
 
-    from strix.report.state import get_global_report_state
+    from airaider.report.state import get_global_report_state
 
     report_state = get_global_report_state()
     if report_state is None:
@@ -778,7 +778,7 @@ async def _do_create(
         return {"success": False, "error": "Validation failed", "errors": [str(exc)]}
 
     try:
-        from strix.report.state import get_global_report_state
+        from airaider.report.state import get_global_report_state
 
         report_state = get_global_report_state()
         if report_state is None:
@@ -789,7 +789,7 @@ async def _do_create(
                 "warning": "Report could not be persisted - report state unavailable",
             }
 
-        from strix.report.dedupe import check_duplicate
+        from airaider.report.dedupe import check_duplicate
 
         existing = report_state.get_existing_vulnerabilities()
         candidate = {
@@ -1880,7 +1880,7 @@ async def _do_create_dependency(  # noqa: PLR0912
     )
 
     try:
-        from strix.report.state import get_global_report_state
+        from airaider.report.state import get_global_report_state
 
         report_state = get_global_report_state()
         if report_state is None:
@@ -1891,7 +1891,7 @@ async def _do_create_dependency(  # noqa: PLR0912
                 "warning": "Report could not be persisted - report state unavailable",
             }
 
-        from strix.report.dedupe import check_duplicate
+        from airaider.report.dedupe import check_duplicate
 
         existing = report_state.get_existing_vulnerabilities()
         candidate = {
@@ -2289,7 +2289,7 @@ def _do_list_reports(
     if errors:
         return {"success": False, "error": "Validation failed", "errors": errors}
 
-    from strix.report.state import get_global_report_state
+    from airaider.report.state import get_global_report_state
 
     report_state = get_global_report_state()
     if report_state is None:
@@ -2336,7 +2336,7 @@ def _do_get_report(report_id: str, caller_agent_id: str | None = None) -> dict[s
     if not report_id:
         return {"success": False, "error": "report_id cannot be empty", "report": None}
 
-    from strix.report.state import get_global_report_state
+    from airaider.report.state import get_global_report_state
 
     report_state = get_global_report_state()
     if report_state is None:

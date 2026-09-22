@@ -1,4 +1,4 @@
-"""Execution loop for addressable SDK-backed Strix agents."""
+"""Execution loop for addressable SDK-backed AiRaider agents."""
 
 from __future__ import annotations
 
@@ -19,21 +19,21 @@ from openai import (
     APITimeoutError,
 )
 
-from strix.config import codex
-from strix.core.hooks import (
+from airaider.config import codex
+from airaider.core.hooks import (
     BudgetExceededError,
     BudgetPausedError,
     SubagentBudgetReservedError,
 )
-from strix.core.inputs import child_initial_input
-from strix.core.sessions import (
+from airaider.core.inputs import child_initial_input
+from airaider.core.sessions import (
     enforce_image_budget,
     open_agent_session,
     replace_session_items,
     seed_initial_input,
     strip_all_images_from_session,
 )
-from strix.llm.compaction import is_context_overflow, maybe_compact
+from airaider.llm.compaction import is_context_overflow, maybe_compact
 
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from agents.memory import Session, SQLiteSession
     from agents.result import RunResultBase
 
-    from strix.core.agents import AgentCoordinator, Status
+    from airaider.core.agents import AgentCoordinator, Status
 
 
 logger = logging.getLogger(__name__)

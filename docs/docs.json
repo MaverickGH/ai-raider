@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "Strix",
+  "name": "AiRaider",
   "colors": {
     "primary": "#000000",
     "light": "#ffffff",
@@ -72,30 +72,18 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "Cloud",
-        "groups": [
-          {
-            "group": "Strix Cloud",
-            "pages": [
-              "cloud/overview",
-              "cloud/cli"
-            ]
-          }
-        ]
       }
     ],
     "global": {
       "anchors": [
         {
           "anchor": "GitHub",
-          "href": "https://github.com/usestrix/strix",
+          "href": "https://github.com/MaverickGH/ai-raider",
           "icon": "github"
         },
         {
           "anchor": "Discord",
-          "href": "https://discord.gg/strix-ai",
+          "href": "https://discord.gg/airaider-ai",
           "icon": "discord"
         }
       ]
@@ -105,15 +93,15 @@
     "links": [],
     "primary": {
       "type": "button",
-      "label": "Try Strix Cloud",
-      "href": "https://app.strix.ai"
+      "label": "GitHub",
+      "href": "https://github.com/MaverickGH/ai-raider"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/strix_ai",
+      "x": "https://x.com/airaider_ai",
       "github": "https://github.com/usestrix",
-      "discord": "https://discord.gg/strix-ai"
+      "discord": "https://discord.gg/airaider-ai"
     }
   },
   "fonts": {

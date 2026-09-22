@@ -1,4 +1,4 @@
-"""Top-level Strix scan runner."""
+"""Top-level AiRaider scan runner."""
 
 from __future__ import annotations
 
@@ -16,38 +16,38 @@ from agents import RunConfig
 from agents.sandbox import SandboxRunConfig
 from openai import RateLimitError
 
-from strix.agents.factory import build_strix_agent, make_child_factory
-from strix.agents.prompt import render_system_prompt
-from strix.config import load_settings
-from strix.config.models import (
-    StrixProvider,
+from airaider.agents.factory import build_airaider_agent, make_child_factory
+from airaider.agents.prompt import render_system_prompt
+from airaider.config import load_settings
+from airaider.config.models import (
+    AiRaiderProvider,
     configure_sdk_model_defaults,
     supports_strict_tool_schemas,
     uses_chat_completions_tool_schema,
 )
-from strix.config.settings import DEFAULT_MAX_TURNS
-from strix.core.agents import AgentCoordinator
-from strix.core.execution import (
+from airaider.config.settings import DEFAULT_MAX_TURNS
+from airaider.core.agents import AgentCoordinator
+from airaider.core.execution import (
     respawn_subagents,
     run_agent_loop,
 )
-from strix.core.execution import (
+from airaider.core.execution import (
     spawn_child_agent as start_child_agent,
 )
-from strix.core.hooks import BudgetExceededError, ReportUsageHooks, recomputed_budget_flags
-from strix.core.inputs import (
+from airaider.core.hooks import BudgetExceededError, ReportUsageHooks, recomputed_budget_flags
+from airaider.core.inputs import (
     build_root_task,
     build_scan_targets,
     build_scope_context,
     make_model_settings,
 )
-from strix.core.paths import run_dir_for, runtime_state_dir
-from strix.core.sessions import open_agent_session
-from strix.report.state import get_global_report_state
-from strix.runtime import session_manager
-from strix.telemetry import set_scan_phase
-from strix.telemetry.logging import set_scan_id, setup_scan_logging
-from strix.tools.output_store import (
+from airaider.core.paths import run_dir_for, runtime_state_dir
+from airaider.core.sessions import open_agent_session
+from airaider.report.state import get_global_report_state
+from airaider.runtime import session_manager
+from airaider.telemetry import set_scan_phase
+from airaider.telemetry.logging import set_scan_id, setup_scan_logging
+from airaider.tools.output_store import (
     WORKSPACE_SPILL_DIR,
     configure_spill_writer,
 )
@@ -57,8 +57,8 @@ if TYPE_CHECKING:
     from agents.memory import SQLiteSession
     from agents.result import RunResultBase
 
-    from strix.runtime.status import StatusSink
-    from strix.tools.mcp import (
+    from airaider.runtime.status import StatusSink
+    from airaider.tools.mcp import (
         ConnectedMcpServer,
         McpConnectionRequest,
         McpRegistry,
@@ -187,7 +187,7 @@ def _compose_root_instructions_override(
     )
 
 
-async def run_strix_scan(
+async def run_airaider_scan(
     *,
     scan_config: dict[str, Any],
     scan_id: str | None = None,
@@ -207,13 +207,13 @@ async def run_strix_scan(
     mcp_connection_requests: list[McpConnectionRequest] | None = None,
     mcp_status_sink: McpStatusSink | None = None,
 ) -> RunResultBase | None:
-    """Run or resume one Strix scan against a sandbox.
+    """Run or resume one AiRaider scan against a sandbox.
 
     ``root_instructions_override`` adds root scan instructions to the rendered
     root prompt without replacing the system-verified scope block.
     ``extra_files`` entries (``{"workspace_path", "content"}``) are placed into
     the sandbox workspace at session bring-up; see
-    :func:`strix.runtime.session_manager.create_or_reuse`.
+    :func:`airaider.runtime.session_manager.create_or_reuse`.
     ``extra_system_prompt_context`` is merged into the root agent's scan
     context before prompt rendering. Child agents keep the standard scan prompt
     and context.
@@ -243,7 +243,7 @@ async def run_strix_scan(
     is_resume = agents_path.exists()
 
     logger.info(
-        "%s Strix scan %s (image=%s, max_turns=%d, interactive=%s, run_dir=%s)",
+        "%s AiRaider scan %s (image=%s, max_turns=%d, interactive=%s, run_dir=%s)",
         "Resuming" if is_resume else "Starting",
         scan_id,
         image,
@@ -257,7 +257,7 @@ async def run_strix_scan(
     resolved_model = (model or settings.llm.model or "").strip()
     if not resolved_model:
         raise RuntimeError(
-            "No LLM model configured. Set AIRAIDER_LLM env or pass model= to run_strix_scan().",
+            "No LLM model configured. Set AIRAIDER_LLM env or pass model= to run_airaider_scan().",
         )
     logger.info("LLM model resolved: %s", resolved_model)
     chat_completions_tools = uses_chat_completions_tool_schema(resolved_model, settings)
@@ -269,10 +269,10 @@ async def run_strix_scan(
         coordinator = AgentCoordinator()
     coordinator.set_snapshot_path(agents_path)
 
-    from strix.tools.coverage.tools import hydrate_coverage_from_disk
-    from strix.tools.notes.tools import hydrate_notes_from_disk
-    from strix.tools.threat_model.tools import hydrate_threat_models_from_disk
-    from strix.tools.todo.tools import hydrate_todos_from_disk
+    from airaider.tools.coverage.tools import hydrate_coverage_from_disk
+    from airaider.tools.notes.tools import hydrate_notes_from_disk
+    from airaider.tools.threat_model.tools import hydrate_threat_models_from_disk
+    from airaider.tools.todo.tools import hydrate_todos_from_disk
 
     hydrate_todos_from_disk(state_dir)
     hydrate_notes_from_disk(state_dir)
@@ -368,7 +368,7 @@ async def run_strix_scan(
         )
         run_config = RunConfig(
             model=resolved_model,
-            model_provider=StrixProvider(),
+            model_provider=AiRaiderProvider(),
             model_settings=model_settings,
             sandbox=SandboxRunConfig(client=bundle["client"], session=bundle["session"]),
             trace_include_sensitive_data=False,
@@ -397,7 +397,7 @@ async def run_strix_scan(
         # list_mcps / describe_mcp / call_mcp tools, guided by brief static prompt
         # guidance when any connection exists. Fail-open: a missing config, or a
         # server that will not connect, must never break a run.
-        from strix.tools.mcp import (
+        from airaider.tools.mcp import (
             McpConnectionRequest,
             McpRegistry,
             attach_mcp_requests,
@@ -478,7 +478,7 @@ async def run_strix_scan(
             system_prompt_context=root_context,
         )
 
-        root_agent = build_strix_agent(
+        root_agent = build_airaider_agent(
             name="Root Agent",
             skills=skills,
             is_root=True,
@@ -629,7 +629,7 @@ async def run_strix_scan(
     except RateLimitError as exc:
         logger.warning(
             "Scan %s stopped: persistent rate limit from the LLM provider (%s). "
-            "Resume with 'strix --resume %s' once the limit clears.",
+            "Resume with 'airaider --resume %s' once the limit clears.",
             scan_id,
             exc,
             scan_id,
@@ -646,7 +646,7 @@ async def run_strix_scan(
                 await coordinator.set_status(root_id, "running")
         raise
     except BaseException:
-        logger.exception("Strix scan %s failed", scan_id)
+        logger.exception("AiRaider scan %s failed", scan_id)
         if root_id is not None:
             with contextlib.suppress(Exception):
                 await coordinator.set_status(root_id, "failed")
@@ -669,5 +669,5 @@ async def run_strix_scan(
         if cleanup_on_exit:
             logger.info("Tearing down sandbox session for scan %s", scan_id)
             await session_manager.cleanup(scan_id)
-        logger.info("Strix scan %s done", scan_id)
+        logger.info("AiRaider scan %s done", scan_id)
         teardown_logging()

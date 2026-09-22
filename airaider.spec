@@ -5,32 +5,32 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 project_root = Path(SPECPATH)
-strix_root = project_root / 'strix'
+airaider_root = project_root / 'airaider'
 
-tui_name = 'strix-tui.exe' if sys.platform == 'win32' else 'strix-tui'
+tui_name = 'airaider-tui.exe' if sys.platform == 'win32' else 'airaider-tui'
 tui_binary = project_root / 'build' / 'sidecar' / tui_name
 if not tui_binary.is_file():
     raise FileNotFoundError(
         f'Missing Go TUI sidecar at {tui_binary}; run `make tui-build` first'
     )
-binaries = [(str(tui_binary), 'strix/bin')]
+binaries = [(str(tui_binary), 'airaider/bin')]
 
 datas = []
 
-for md_file in strix_root.rglob('skills/**/*.md'):
+for md_file in airaider_root.rglob('skills/**/*.md'):
     rel_path = md_file.relative_to(project_root)
     datas.append((str(md_file), str(rel_path.parent)))
 
-for jinja_file in strix_root.rglob('agents/**/*.jinja'):
+for jinja_file in airaider_root.rglob('agents/**/*.jinja'):
     rel_path = jinja_file.relative_to(project_root)
     datas.append((str(jinja_file), str(rel_path.parent)))
 
-for xml_file in strix_root.rglob('*.xml'):
+for xml_file in airaider_root.rglob('*.xml'):
     rel_path = xml_file.relative_to(project_root)
     datas.append((str(xml_file), str(rel_path.parent)))
 
-# Prebuilt local-viewer SPA (served by `strix view`).
-viewer_static = strix_root / 'interface' / 'viewer' / 'static'
+# Prebuilt local-viewer SPA (served by `airaider view`).
+viewer_static = airaider_root / 'interface' / 'viewer' / 'static'
 for asset in viewer_static.rglob('*'):
     if asset.is_file():
         rel_path = asset.relative_to(project_root)
@@ -110,44 +110,44 @@ hiddenimports = [
     # CVSS scoring
     'cvss',
 
-    # Strix modules
-    'strix',
-    'strix.interface',
-    'strix.interface.main',
-    'strix.interface.cli',
-    'strix.interface.tui',
-    'strix.interface.tui.runtime',
-    'strix.interface.tui.history',
-    'strix.interface.tui.live_view',
-    'strix.interface.tui.backend',
-    'strix.interface.tui.backend.controller',
-    'strix.interface.tui.backend.messages',
-    'strix.interface.tui.backend.protocol',
-    'strix.interface.tui.backend.server',
-    'strix.interface.utils',
-    'strix.agents',
-    'strix.agents.factory',
-    'strix.agents.prompt',
-    'strix.config.loader',
-    'strix.config.settings',
-    'strix.config.codex',
-    'strix.core',
-    'strix.core.agents',
-    'strix.core.execution',
-    'strix.core.inputs',
-    'strix.core.paths',
-    'strix.core.runner',
-    'strix.core.sessions',
-    'strix.report',
-    'strix.report.dedupe',
-    'strix.report.state',
-    'strix.report.writer',
-    'strix.interface.viewer',
-    'strix.interface.viewer.auth',
-    'strix.interface.viewer.cli',
-    'strix.interface.viewer.report_pdf',
-    'strix.interface.viewer.server',
-    'strix.interface.viewer.transcript',
+    # AiRaider modules
+    'airaider',
+    'airaider.interface',
+    'airaider.interface.main',
+    'airaider.interface.cli',
+    'airaider.interface.tui',
+    'airaider.interface.tui.runtime',
+    'airaider.interface.tui.history',
+    'airaider.interface.tui.live_view',
+    'airaider.interface.tui.backend',
+    'airaider.interface.tui.backend.controller',
+    'airaider.interface.tui.backend.messages',
+    'airaider.interface.tui.backend.protocol',
+    'airaider.interface.tui.backend.server',
+    'airaider.interface.utils',
+    'airaider.agents',
+    'airaider.agents.factory',
+    'airaider.agents.prompt',
+    'airaider.config.loader',
+    'airaider.config.settings',
+    'airaider.config.codex',
+    'airaider.core',
+    'airaider.core.agents',
+    'airaider.core.execution',
+    'airaider.core.inputs',
+    'airaider.core.paths',
+    'airaider.core.runner',
+    'airaider.core.sessions',
+    'airaider.report',
+    'airaider.report.dedupe',
+    'airaider.report.state',
+    'airaider.report.writer',
+    'airaider.interface.viewer',
+    'airaider.interface.viewer.auth',
+    'airaider.interface.viewer.cli',
+    'airaider.interface.viewer.report_pdf',
+    'airaider.interface.viewer.server',
+    'airaider.interface.viewer.transcript',
 
     # PDF report generation + encryption
     'reportlab',
@@ -157,26 +157,26 @@ hiddenimports = [
     'reportlab.platypus',
     'pypdf',
     'cryptography',
-    'strix.runtime',
-    'strix.runtime.backends',
-    'strix.runtime.caido_bootstrap',
-    'strix.runtime.docker_client',
-    'strix.runtime.session_manager',
-    'strix.telemetry',
-    'strix.telemetry.logging',
-    'strix.telemetry.posthog',
-    'strix.tools',
-    'strix.tools.agents_graph.tools',
-    'strix.tools.finish.tool',
-    'strix.tools.notes.tools',
-    'strix.tools.proxy._calls',
-    'strix.tools.proxy.tools',
-    'strix.tools.python.tool',
-    'strix.tools.reporting.tool',
-    'strix.tools.thinking.tool',
-    'strix.tools.todo.tools',
-    'strix.tools.web_search.tool',
-    'strix.skills',
+    'airaider.runtime',
+    'airaider.runtime.backends',
+    'airaider.runtime.caido_bootstrap',
+    'airaider.runtime.docker_client',
+    'airaider.runtime.session_manager',
+    'airaider.telemetry',
+    'airaider.telemetry.logging',
+    'airaider.telemetry.posthog',
+    'airaider.tools',
+    'airaider.tools.agents_graph.tools',
+    'airaider.tools.finish.tool',
+    'airaider.tools.notes.tools',
+    'airaider.tools.proxy._calls',
+    'airaider.tools.proxy.tools',
+    'airaider.tools.python.tool',
+    'airaider.tools.reporting.tool',
+    'airaider.tools.thinking.tool',
+    'airaider.tools.todo.tools',
+    'airaider.tools.web_search.tool',
+    'airaider.skills',
 ]
 
 hiddenimports += collect_submodules('litellm')
@@ -244,7 +244,7 @@ excludes = [
 ]
 
 a = Analysis(
-    ['strix/interface/main.py'],
+    ['airaider/interface/main.py'],
     pathex=[str(project_root)],
     binaries=binaries,
     datas=datas,
@@ -265,7 +265,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='strix',
+    name='airaider',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -7,7 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/usestrix/strix/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
 )
 
 func inputModel(t *testing.T) Model {

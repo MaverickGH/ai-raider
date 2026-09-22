@@ -1,1 +1,1 @@
-"""Strix scan runtime core."""
+"""AiRaider scan runtime core."""

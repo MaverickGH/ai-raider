@@ -26,9 +26,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs, unquote, urlencode, urlsplit
 
-from strix.core.paths import run_record_path
-from strix.interface.viewer import auth
-from strix.interface.viewer.transcript import (
+from airaider.core.paths import run_record_path
+from airaider.interface.viewer import auth
+from airaider.interface.viewer.transcript import (
     build_run_state,
     primary_target,
     read_report_markdown,
@@ -108,10 +108,10 @@ def resolve_run_dir(base_dir: Path, run_param: str | None, default_run_dir: Path
 
 
 # Prefix of the cookie carrying the per-process session capability. The bound
-# port is appended (``strix_viewer_session_<port>``) because browsers scope
+# port is appended (``airaider_viewer_session_<port>``) because browsers scope
 # cookies by host only, never by port: concurrent viewers on 127.0.0.1 would
 # otherwise share one cookie slot and clobber each other's session.
-SESSION_COOKIE_PREFIX = "strix_viewer_session"
+SESSION_COOKIE_PREFIX = "airaider_viewer_session"
 
 
 class _ViewerState:
@@ -123,7 +123,7 @@ class _ViewerState:
     ) -> None:
         self.run_dir = run_dir
         self.assets_dir = assets_dir
-        # The strix_runs directory that holds the launched run; used to
+        # The airaider_runs directory that holds the launched run; used to
         # enumerate and resolve other runs for the history list.
         self.base_dir = run_dir.parent
         # Set only when the viewer runs inside a live scan process (the TUI
@@ -146,7 +146,7 @@ class _ViewerState:
 
 def _make_handler(state: _ViewerState) -> type[BaseHTTPRequestHandler]:
     class ViewerHandler(BaseHTTPRequestHandler):
-        server_version = "StrixViewer/1.0"
+        server_version = "AiRaiderViewer/1.0"
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
             logger.debug("viewer %s - %s", self.address_string(), format % args)
@@ -217,18 +217,18 @@ def _make_handler(state: _ViewerState) -> type[BaseHTTPRequestHandler]:
             # only the whitelisted event names and their known props are passed.
             event = body.get("event")
             if event == "cta_clicked":
-                from strix.telemetry import posthog
+                from airaider.telemetry import posthog
 
                 cta = str(body.get("cta") or "unknown")
                 surface = body.get("surface")
                 posthog.viewer_cta_clicked(cta, surface=str(surface) if surface else None)
             elif event in self._EMAIL_EVENTS:
-                from strix.telemetry import posthog
+                from airaider.telemetry import posthog
 
                 purpose = body.get("purpose")
                 posthog.viewer_email_event(str(event), purpose=str(purpose) if purpose else None)
             elif event == "agent_steered":
-                from strix.telemetry import posthog
+                from airaider.telemetry import posthog
 
                 posthog.viewer_agent_steered()
             self.send_response(HTTPStatus.NO_CONTENT)
@@ -375,7 +375,7 @@ def _make_handler(state: _ViewerState) -> type[BaseHTTPRequestHandler]:
                 self._send_json(HTTPStatus.CONFLICT, {"error": "run_not_finished"})
                 return
 
-            from strix.interface.viewer.report_pdf import build_encrypted_report
+            from airaider.interface.viewer.report_pdf import build_encrypted_report
 
             pdf_bytes, password, filename = build_encrypted_report(run_dir)
             run_name = str(summary.get("run_name") or run_dir.name)
@@ -419,7 +419,7 @@ def _make_handler(state: _ViewerState) -> type[BaseHTTPRequestHandler]:
                 return
             # Server-authoritative: fire only after a successful relay (respects
             # the telemetry opt-out; no message/email content is sent).
-            from strix.telemetry import posthog
+            from airaider.telemetry import posthog
 
             posthog.viewer_feedback_submitted()
             self._send_json(HTTPStatus.OK, {"ok": True})
@@ -597,7 +597,7 @@ def serve(
     state.cookie_name = f"{SESSION_COOKIE_PREFIX}_{bound_port}"
     url = f"http://{host}:{bound_port}"
 
-    thread = threading.Thread(target=httpd.serve_forever, name="strix-viewer", daemon=True)
+    thread = threading.Thread(target=httpd.serve_forever, name="airaider-viewer", daemon=True)
     thread.start()
 
     if open_browser:

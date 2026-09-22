@@ -1,4 +1,4 @@
-"""SDK run hooks used by Strix orchestration."""
+"""SDK run hooks used by AiRaider orchestration."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from agents.lifecycle import RunHooks
 
-from strix.report.state import get_global_report_state
+from airaider.report.state import get_global_report_state
 
 
 if TYPE_CHECKING:

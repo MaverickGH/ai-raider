@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/usestrix/strix/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
 )
 
 func writeEnvelopeFrame(writer io.Writer, envelope protocol.Envelope) error {
@@ -202,9 +202,9 @@ func TestConnectFromEnvironmentAuthenticatesTCPTransport(t *testing.T) {
 	}
 	defer listener.Close()
 
-	t.Setenv("STRIX_TUI_ADDR", listener.Addr().String())
-	t.Setenv("STRIX_TUI_TOKEN", "one-use-token")
-	t.Setenv("STRIX_TUI_FD", "")
+	t.Setenv("AIRAIDER_TUI_ADDR", listener.Addr().String())
+	t.Setenv("AIRAIDER_TUI_TOKEN", "one-use-token")
+	t.Setenv("AIRAIDER_TUI_FD", "")
 
 	serverErr := make(chan error, 1)
 	go func() {
@@ -256,29 +256,29 @@ func TestConnectFromEnvironmentAuthenticatesTCPTransport(t *testing.T) {
 	if err := <-serverErr; err != nil {
 		t.Fatal(err)
 	}
-	if os.Getenv("STRIX_TUI_ADDR") != "" || os.Getenv("STRIX_TUI_TOKEN") != "" {
+	if os.Getenv("AIRAIDER_TUI_ADDR") != "" || os.Getenv("AIRAIDER_TUI_TOKEN") != "" {
 		t.Fatal("TCP transport credentials were not removed from the environment")
 	}
 }
 
 func TestConnectFromEnvironmentRequiresCompleteTransport(t *testing.T) {
-	t.Setenv("STRIX_TUI_FD", "")
-	t.Setenv("STRIX_TUI_ADDR", "127.0.0.1:1")
-	t.Setenv("STRIX_TUI_TOKEN", "")
+	t.Setenv("AIRAIDER_TUI_FD", "")
+	t.Setenv("AIRAIDER_TUI_ADDR", "127.0.0.1:1")
+	t.Setenv("AIRAIDER_TUI_TOKEN", "")
 
 	_, err := ConnectFromEnvironment()
-	if err == nil || !strings.Contains(err.Error(), "STRIX_TUI_ADDR and STRIX_TUI_TOKEN") {
+	if err == nil || !strings.Contains(err.Error(), "AIRAIDER_TUI_ADDR and AIRAIDER_TUI_TOKEN") {
 		t.Fatalf("error = %v, want missing transport error", err)
 	}
 }
 
 func TestConnectFromEnvironmentPrefersInheritedDescriptor(t *testing.T) {
-	t.Setenv("STRIX_TUI_FD", "not-a-number")
-	t.Setenv("STRIX_TUI_ADDR", "127.0.0.1:1")
-	t.Setenv("STRIX_TUI_TOKEN", "token")
+	t.Setenv("AIRAIDER_TUI_FD", "not-a-number")
+	t.Setenv("AIRAIDER_TUI_ADDR", "127.0.0.1:1")
+	t.Setenv("AIRAIDER_TUI_TOKEN", "token")
 
 	_, err := ConnectFromEnvironment()
-	if err == nil || !strings.Contains(err.Error(), "invalid STRIX_TUI_FD") {
+	if err == nil || !strings.Contains(err.Error(), "invalid AIRAIDER_TUI_FD") {
 		t.Fatalf("error = %v, want inherited descriptor parse error", err)
 	}
 }

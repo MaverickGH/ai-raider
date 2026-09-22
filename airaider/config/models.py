@@ -36,10 +36,10 @@ from openai.types.responses import (
 from openai.types.responses.response_usage import ResponseUsage
 from openai.types.shared import Reasoning
 
-from strix.config import codex
-from strix.config.loader import load_settings
-from strix.config.tool_call_ids import TurnCallIdRewriter, dedupe_input
-from strix.config.tool_call_limits import TurnToolCallLimiter
+from airaider.config import codex
+from airaider.config.loader import load_settings
+from airaider.config.tool_call_ids import TurnCallIdRewriter, dedupe_input
+from airaider.config.tool_call_limits import TurnToolCallLimiter
 
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from openai import AsyncOpenAI
     from openai.types.responses.response_prompt_param import ResponsePromptParam
 
-    from strix.config.settings import LlmSettings, ReasoningEffort, Settings
+    from airaider.config.settings import LlmSettings, ReasoningEffort, Settings
 
 
 logger = logging.getLogger(__name__)
@@ -169,7 +169,7 @@ class _NonStreamingModel(Model):
     Some OpenAI-compatible gateways do not support Server-Sent Events, or
     deliver them unreliably (dropping structured tool-call deltas, or stalling
     mid-stream so the whole turn waits out the read timeout). The SDK run loop
-    Strix uses only issues streamed requests, so such a gateway fails every
+    AiRaider uses only issues streamed requests, so such a gateway fails every
     turn. Opt in with ``LLM_DISABLE_STREAMING=true`` to wrap the resolved model
     so each turn makes one non-streaming ``get_response`` (``stream:false`` on
     the wire) and the completed result is replayed as a single terminal stream
@@ -467,7 +467,7 @@ class _CredentialedLitellmProvider(ModelProvider):
         )
 
 
-class StrixProvider(MultiProvider):
+class AiRaiderProvider(MultiProvider):
     """Route any non-OpenAI prefix through LiteLLM with the prefix preserved,
     so users type ``deepseek/deepseek-chat`` rather than
     ``litellm/deepseek/deepseek-chat``.
@@ -618,7 +618,7 @@ FRONTIER_MODEL_PREFIXES = (
 
 
 def configure_sdk_model_defaults(settings: Settings) -> None:
-    """Apply Strix config to SDK-native defaults."""
+    """Apply AiRaider config to SDK-native defaults."""
     llm = settings.llm
     set_tracing_disabled(True)
     if codex.subscription_model(llm.model):
@@ -666,7 +666,7 @@ def _configure_litellm_compatibility() -> None:
     litellm.drop_params = True
     litellm.modify_params = True
     litellm.turn_off_message_logging = True
-    # Strix uses LiteLLM's success callback to capture provider-reported cost.
+    # AiRaider uses LiteLLM's success callback to capture provider-reported cost.
     # Disabling streaming logging also disables that callback for streamed calls.
     litellm.disable_streaming_logging = False
     litellm.suppress_debug_info = True
@@ -682,7 +682,7 @@ def _install_openrouter_stream_cost_capture() -> None:
     chunk, but LiteLLM rebuilds streamed responses from token-only fields and
     discards it (its non-streamed path stashes the cost in hidden params; the
     streaming path does not). Every scan streams, so without this the cost is
-    lost and Strix falls back to a cost-map estimate that is missing entirely
+    lost and AiRaider falls back to a cost-map estimate that is missing entirely
     for new models (e.g. kimi-k3), reporting $0. Subclass the OpenRouter
     streaming handler to record the cost keyed by response id so the cost
     callback can recover the exact charge for the matching rebuilt response.
@@ -693,9 +693,9 @@ def _install_openrouter_stream_cost_capture() -> None:
         OpenrouterConfig,
     )
 
-    from strix.report.state import streamed_openrouter_costs
+    from airaider.report.state import streamed_openrouter_costs
 
-    class _StrixOpenRouterStreamingHandler(OpenRouterChatCompletionStreamingHandler):
+    class _AiRaiderOpenRouterStreamingHandler(OpenRouterChatCompletionStreamingHandler):
         def chunk_parser(self, chunk: dict[str, Any]) -> Any:
             stream = super().chunk_parser(chunk)
             streamed_openrouter_costs.remember(
@@ -703,11 +703,11 @@ def _install_openrouter_stream_cost_capture() -> None:
             )
             return stream
 
-    class _StrixOpenrouterConfig(OpenrouterConfig):
+    class _AiRaiderOpenrouterConfig(OpenrouterConfig):
         def get_model_response_iterator(
             self, streaming_response: Any, sync_stream: bool, json_mode: bool | None = False
         ) -> Any:
-            return _StrixOpenRouterStreamingHandler(
+            return _AiRaiderOpenRouterStreamingHandler(
                 streaming_response=streaming_response,
                 sync_stream=sync_stream,
                 json_mode=json_mode,
@@ -716,12 +716,12 @@ def _install_openrouter_stream_cost_capture() -> None:
     # LiteLLM's provider-config factory reads litellm.OpenrouterConfig at call
     # time, so overriding the attribute is enough for the subclass to take
     # effect. (type: ignore — mypy rejects reassigning a class attribute.)
-    litellm.OpenrouterConfig = _StrixOpenrouterConfig  # type: ignore[misc]
+    litellm.OpenrouterConfig = _AiRaiderOpenrouterConfig  # type: ignore[misc]
 
 
 OPENROUTER_ATTRIBUTION_HEADERS = {
-    "HTTP-Referer": "https://strix.ai",
-    "X-Title": "Strix",
+    "HTTP-Referer": "https://github.com/MaverickGH/ai-raider",
+    "X-Title": "AiRaider",
     "X-OpenRouter-Categories": "cli-agent",
 }
 
@@ -786,7 +786,7 @@ def _register_openai_client_with_headers(llm: LlmSettings, headers: dict[str, st
 def _register_litellm_cost_callback() -> None:
     import litellm
 
-    from strix.report.state import litellm_cost_callback
+    from airaider.report.state import litellm_cost_callback
 
     for bucket_name in ("success_callback", "_async_success_callback"):
         bucket = getattr(litellm, bucket_name, None)
@@ -819,10 +819,10 @@ def uses_chat_completions_tool_schema(model_name: str, settings: Settings) -> bo
 
 
 def supports_strict_tool_schemas(model_name: str) -> bool:
-    """Return whether the route accepts strict tool schemas for Strix's toolset.
+    """Return whether the route accepts strict tool schemas for AiRaider's toolset.
 
     Claude caps a request at 20 strict tools and 16 union-typed parameters
-    across all strict schemas. Strix ships ~30 tools and the strict dialect
+    across all strict schemas. AiRaider ships ~30 tools and the strict dialect
     turns every optional parameter into a nullable union, so both caps are
     exceeded and the request is rejected outright.
     """
@@ -899,7 +899,7 @@ def is_claude_model(model_name: str) -> bool:
 
 
 def routes_through_litellm(model_name: str | None) -> bool:
-    """Whether :class:`StrixProvider` sends this model through LiteLLM.
+    """Whether :class:`AiRaiderProvider` sends this model through LiteLLM.
 
     Bare names and the ``openai/``/``any-llm/`` prefixes are served by the SDK's
     own clients, which raise ``TypeError`` on request fields they do not know,

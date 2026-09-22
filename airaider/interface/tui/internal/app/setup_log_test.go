@@ -7,8 +7,8 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
-	"github.com/usestrix/strix/tui/internal/protocol"
-	"github.com/usestrix/strix/tui/internal/render"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/render"
 )
 
 // Retrying a launch that cannot succeed yet must not fill the log with copies of
@@ -18,7 +18,7 @@ func TestSetupLogCollapsesRepeatedAttempts(t *testing.T) {
 	m.snapshot.SetupMode = true
 	for range 4 {
 		m.setupMsg("Verifying model connection...", render.Col(amber))
-		m.setupMsg("No model configured. Set STRIX_LLM first.", render.Col(red))
+		m.setupMsg("No model configured. Set AIRAIDER_LLM first.", render.Col(red))
 	}
 	if got := len(m.setupLog); got != 2 {
 		t.Fatalf("setup log holds %d lines after 4 identical attempts, want 2: %#v", got, m.setupLog)
@@ -51,7 +51,7 @@ func TestRepeatedSetupStartFailureLogsOnce(t *testing.T) {
 			Command: "setup.start",
 			Error: &protocol.CommandError{
 				Code:    "invalid_state",
-				Message: "No model configured. Set STRIX_LLM first.",
+				Message: "No model configured. Set AIRAIDER_LLM first.",
 			},
 		})
 		if err != nil {
@@ -77,7 +77,7 @@ func TestFocusedPanelsCarryTheGreenBorder(t *testing.T) {
 		m.width, m.height = 130, 30
 		m.showSplash = false
 		m.snapshot.ScanState = "running"
-		m.snapshot.Agents = []protocol.Agent{{ID: "a0", Name: "Strix", Status: "running"}}
+		m.snapshot.Agents = []protocol.Agent{{ID: "a0", Name: "AiRaider", Status: "running"}}
 		m.snapshot.Vulnerabilities = []map[string]any{{"title": "XSS", "severity": "high"}}
 		m.focus = focus
 		m.resizeViewport()

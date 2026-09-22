@@ -24,7 +24,7 @@ a process that has already exited, fails with
 
 - **Implementation:** `agents.sandbox.capabilities.tools.shell_tool.ShellTool`
   (in the upstream `agents` SDK)
-- **Wired in:** `strix/agents/factory.py` — added per-run via the SDK
+- **Wired in:** `airaider/agents/factory.py` — added per-run via the SDK
   `Shell` capability; `write_stdin` is wrapped to drop the SDK's `pid`
   arg from the function schema.
 - **Sandbox env:** `http_proxy` / `https_proxy` route every shell child

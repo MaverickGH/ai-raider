@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
-from strix.tools.mcp.agent_tools import call_mcp, describe_mcp, list_mcps
-from strix.tools.mcp.client import (
+from airaider.tools.mcp.agent_tools import call_mcp, describe_mcp, list_mcps
+from airaider.tools.mcp.client import (
     ConnectedMcpServer,
     attach_mcp_requests,
     connect_mcp_servers,
 )
-from strix.tools.mcp.config import (
+from airaider.tools.mcp.config import (
     BearerAuth,
     McpAuth,
     McpConnectionConfig,
 )
-from strix.tools.mcp.failures import FailureInfo, HttpStatusRecorder, classify
-from strix.tools.mcp.loader import load_user_mcp_configs
-from strix.tools.mcp.naming import namespaced_tool_name
-from strix.tools.mcp.registry import (
+from airaider.tools.mcp.failures import FailureInfo, HttpStatusRecorder, classify
+from airaider.tools.mcp.loader import load_user_mcp_configs
+from airaider.tools.mcp.naming import namespaced_tool_name
+from airaider.tools.mcp.registry import (
     CALL_MCP_TOOL,
     DESCRIBE_MCP_TOOL,
     MCP_DISPATCH_TOOLS,
@@ -29,7 +29,7 @@ from strix.tools.mcp.registry import (
     McpRegistry,
     resolve_mcp_call,
 )
-from strix.tools.mcp.session import McpConnectionUnavailableError, SupervisedMcpSession
+from airaider.tools.mcp.session import McpConnectionUnavailableError, SupervisedMcpSession
 
 
 __all__ = [

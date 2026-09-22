@@ -1,4 +1,4 @@
-"""UI-independent state and command controller for interactive Strix clients."""
+"""UI-independent state and command controller for interactive AiRaider clients."""
 
 from __future__ import annotations
 
@@ -10,11 +10,11 @@ from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from strix.config import load_settings
-from strix.config.models import is_recommended_or_frontier_model
-from strix.config.settings import DEFAULT_MAX_TURNS
-from strix.interface.tui.backend.live_view import TuiLiveView
-from strix.interface.tui.backend.projection import (
+from airaider.config import load_settings
+from airaider.config.models import is_recommended_or_frontier_model
+from airaider.config.settings import DEFAULT_MAX_TURNS
+from airaider.interface.tui.backend.live_view import TuiLiveView
+from airaider.interface.tui.backend.projection import (
     MAX_TERMINAL_EVENTS,
     MAX_TERMINAL_VULNERABILITIES,
     SCAN_MODES,
@@ -24,13 +24,13 @@ from strix.interface.tui.backend.projection import (
     sanitize_terminal_text,
     terminal_projection,
 )
-from strix.interface.utils import is_subscription_run
+from airaider.interface.utils import is_subscription_run
 
 
 if TYPE_CHECKING:
     import argparse
 
-    from strix.report.state import ReportState
+    from airaider.report.state import ReportState
 
 
 _STOPPABLE_AGENT_STATUSES = frozenset({"running", "waiting", "budget_paused"})
@@ -457,10 +457,10 @@ class TuiController:
             self.viewer_status = "failed"
             return {"status": self.viewer_status, "error": "Scan output is not ready"}
         try:
-            from strix.interface.tui.backend.messages import (
+            from airaider.interface.tui.backend.messages import (
                 send_user_message_to_agent,
             )
-            from strix.interface.viewer.server import (
+            from airaider.interface.viewer.server import (
                 authorized_url,
                 bundle_is_built,
                 serve,
@@ -490,7 +490,7 @@ class TuiController:
             self.viewer_url = authorized_url(url, token)
             self.viewer_status = "running"
             with contextlib.suppress(Exception):
-                from strix.telemetry import posthog
+                from airaider.telemetry import posthog
 
                 live = self.report_state.run_record.get("status") not in {
                     "completed",

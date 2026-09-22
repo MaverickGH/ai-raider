@@ -1,4 +1,4 @@
-"""Strix application settings.
+"""AiRaider application settings.
 
 Public surface:
 
@@ -11,12 +11,12 @@ Public surface:
 - :func:`persist_current` — write currently-set env vars to the active file.
 """
 
-from strix.config.loader import (
+from airaider.config.loader import (
     apply_config_override,
     load_settings,
     persist_current,
 )
-from strix.config.settings import (
+from airaider.config.settings import (
     ContextSettings,
     DedupeSettings,
     IntegrationSettings,

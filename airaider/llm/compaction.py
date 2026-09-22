@@ -17,11 +17,11 @@ from agents.model_settings import ModelSettings
 from agents.models.interface import ModelTracing
 from openai.types.responses import ResponseOutputMessage, ResponseOutputText
 
-from strix.config import load_settings
-from strix.config.models import StrixProvider
-from strix.core.inputs import make_model_settings
-from strix.core.sessions import replace_session_items, session_write_lock
-from strix.llm.context_budget import context_window, count_tokens, output_limit
+from airaider.config import load_settings
+from airaider.config.models import AiRaiderProvider
+from airaider.core.inputs import make_model_settings
+from airaider.core.sessions import replace_session_items, session_write_lock
+from airaider.llm.context_budget import context_window, count_tokens, output_limit
 
 
 if TYPE_CHECKING:
@@ -311,7 +311,7 @@ async def _summarize(model: str, prompt: str, max_tokens: int) -> str | None:
     ).resolve(ModelSettings(max_tokens=max_tokens))
     try:
         response = (
-            await StrixProvider()
+            await AiRaiderProvider()
             .get_model(model)
             .get_response(
                 system_instructions=None,

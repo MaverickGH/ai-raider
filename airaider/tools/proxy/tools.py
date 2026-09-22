@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from agents import RunContextWrapper, function_tool
 
-from strix.runtime.caido_handle import CaidoBootstrapHandle
-from strix.tools.nullish import clean_optional
-from strix.tools.proxy import caido_api
+from airaider.runtime.caido_handle import CaidoBootstrapHandle
+from airaider.tools.nullish import clean_optional
+from airaider.tools.proxy import caido_api
 
 
 logger = logging.getLogger(__name__)
@@ -27,14 +27,14 @@ if TYPE_CHECKING:
 
     from caido_sdk_client import Client
 
-    from strix.tools.proxy.caido_api import (
+    from airaider.tools.proxy.caido_api import (
         RequestPart,
         SitemapDepth,
         SortBy,
         SortOrder,
     )
 else:
-    from strix.tools.proxy.caido_api import (  # noqa: TC001
+    from airaider.tools.proxy.caido_api import (  # noqa: TC001
         RequestPart,
         SitemapDepth,
         SortBy,

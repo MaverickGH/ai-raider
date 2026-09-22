@@ -8,7 +8,7 @@ import logging
 from functools import lru_cache
 from typing import Any
 
-from strix.config import load_settings
+from airaider.config import load_settings
 
 
 logger = logging.getLogger(__name__)

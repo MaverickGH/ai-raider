@@ -11,18 +11,18 @@ from typing import Any, cast
 import pytest
 from agents.tool import ToolOutputImage
 
-from strix.config.settings import DEFAULT_MAX_TURNS
-from strix.interface.tui.backend.controller import TuiController
-from strix.interface.tui.backend.projection import bounded_state_projection, terminal_projection
-from strix.interface.tui.backend.protocol import (
+from airaider.config.settings import DEFAULT_MAX_TURNS
+from airaider.interface.tui.backend.controller import TuiController
+from airaider.interface.tui.backend.projection import bounded_state_projection, terminal_projection
+from airaider.interface.tui.backend.protocol import (
     MAX_COMMAND_BYTES,
     PROTOCOL_CAPABILITIES,
     PROTOCOL_VERSION,
     ProtocolHandshakeError,
     envelope,
 )
-from strix.interface.tui.backend.server import TuiBackendServer
-from strix.interface.tui.live_view import TuiLiveView
+from airaider.interface.tui.backend.server import TuiBackendServer
+from airaider.interface.tui.live_view import TuiLiveView
 
 
 def args() -> argparse.Namespace:

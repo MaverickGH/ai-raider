@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/x/ansi"
-	"github.com/usestrix/strix/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
 )
 
 func mcpModel(t *testing.T) Model {

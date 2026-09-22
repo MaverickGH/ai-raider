@@ -30,7 +30,7 @@ from urllib.parse import urlsplit
 
 from agents import RunContextWrapper, function_tool
 
-from strix.core.agents import AgentCoordinator
+from airaider.core.agents import AgentCoordinator
 
 
 logger = logging.getLogger(__name__)

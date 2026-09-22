@@ -2,13 +2,12 @@ import { useState } from "react";
 import { History, ChevronRight, Terminal } from "lucide-react";
 import type { RunListEntry, RunsPayload, RunSeverityCounts } from "@/data/serverSource";
 import { runTitle } from "@/lib/target-utils";
-import { trackCta } from "@/lib/cta";
 import EmailVerifyInline from "@/components/EmailVerifyInline";
 
 /**
  * "Past runs" panel. Unverified users see a tease with the run count and a
  * verify affordance (the launched run stays fully visible; the CLI
- * `strix view <name>` still works). Verified users get the full history and can
+ * `airaider view <name>` still works). Verified users get the full history and can
  * switch the active run, which threads ?run=<name> through the data fetches.
  */
 
@@ -107,10 +106,7 @@ export default function PastRunsView({
           </>
         ) : (
           <button
-            onClick={() => {
-              trackCta("history_unlock", "past_runs");
-              setShowVerify(true);
-            }}
+            onClick={() => setShowVerify(true)}
             className="mt-4 cursor-pointer rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
           >
             View runs
@@ -119,7 +115,7 @@ export default function PastRunsView({
         <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-[#555]">
           <Terminal className="h-3.5 w-3.5" aria-hidden="true" />
           Or open one from the CLI with{" "}
-          <code className="font-mono text-[#888]">strix view &lt;name&gt;</code>
+          <code className="font-mono text-[#888]">airaider view &lt;name&gt;</code>
         </p>
       </div>
     );

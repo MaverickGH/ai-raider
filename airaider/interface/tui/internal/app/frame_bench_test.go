@@ -9,8 +9,8 @@ import (
 	"image/png"
 	"testing"
 
-	"github.com/usestrix/strix/tui/internal/protocol"
-	"github.com/usestrix/strix/tui/internal/render"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/render"
 )
 
 func benchImageDataURI(b *testing.B, w, h int) string {

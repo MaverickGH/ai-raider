@@ -7,7 +7,7 @@ from typing import TypeGuard
 
 import yaml
 
-from strix.utils.resource_paths import get_strix_resource_path
+from airaider.utils.resource_paths import get_airaider_resource_path
 
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def registered_skill_dirs() -> tuple[Path, ...]:
 def skill_search_dirs() -> tuple[Path, ...]:
     """All existing skill roots, highest precedence first (built-in last)."""
     roots = [d for d in registered_skill_dirs() if d.is_dir()]
-    builtin = get_strix_resource_path("skills")
+    builtin = get_airaider_resource_path("skills")
     if builtin.is_dir():
         roots.append(builtin)
     return tuple(roots)
@@ -243,7 +243,7 @@ _LOADED_SKILLS: set[str] = set()
 
 
 def _track_skill_loaded(skill_name: str, file_path: Path) -> None:
-    builtin = get_strix_resource_path("skills")
+    builtin = get_airaider_resource_path("skills")
     if not file_path.is_relative_to(builtin):
         skill_name = "custom"
     _LOADED_SKILLS.add(skill_name)
@@ -264,7 +264,7 @@ def _candidate_skill_files(skill_name: str) -> list[Path]:
 def load_skills(skill_names: list[str]) -> dict[str, str]:
     """Load skill markdown bodies (frontmatter stripped) by name.
 
-    Skill files live at ``strix/skills/<category>/<name>.md`` (or any
+    Skill files live at ``airaider/skills/<category>/<name>.md`` (or any
     directory added via :func:`register_skill_dir`, searched first).
     Names can be ``"name"`` (any category), ``"category/name"``, or a
     bare file at the skills root. Missing skills are logged and skipped.

@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 [ -f scripts/keychain-env.sh ] && . scripts/keychain-env.sh
 TARGET="${1:?Укажи цель: ./run-scan.sh <url|путь> [quick|standard|deep]}"
 MODE="${2:-quick}"
-if [ -z "${AIRAIDER_LLM:-}${STRIX_LLM:-}" ]; then
+if [ -z "${AIRAIDER_LLM:-}${AIRAIDER_LLM:-}" ]; then
   echo "Задай модель: ./scripts/keychain-set.sh AIRAIDER_LLM openai/gpt-5.4  (или export AIRAIDER_LLM=…)"; exit 1
 fi
 # Ключ провайдера берётся из окружения (напр. ANTHROPIC_API_KEY) — в скрипт не зашит.

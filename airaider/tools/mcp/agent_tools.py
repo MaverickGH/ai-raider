@@ -12,8 +12,8 @@ It gets exactly these three and discovers connections on demand:
 - ``call_mcp(connection, tool, arguments)`` dispatches one call to a
   connection's tool and returns its result.
 
-All three read the per-run :class:`~strix.tools.mcp.registry.McpRegistry` from the
-run context under :data:`~strix.tools.mcp.registry.MCP_REGISTRY_CONTEXT_KEY`. They
+All three read the per-run :class:`~airaider.tools.mcp.registry.McpRegistry` from the
+run context under :data:`~airaider.tools.mcp.registry.MCP_REGISTRY_CONTEXT_KEY`. They
 are ordinary ``FunctionTool`` objects placed in the agent factory's base tool set,
 so the factory's output-bounding and disk-spill wrapping apply to their results
 automatically.
@@ -26,10 +26,10 @@ from typing import TYPE_CHECKING, Any
 
 from agents import RunContextWrapper, function_tool
 
-from strix.tools.mcp.client import _errored_tool_output
-from strix.tools.mcp.naming import namespaced_tool_name
-from strix.tools.mcp.registry import MCP_REGISTRY_CONTEXT_KEY, McpRegistry
-from strix.tools.mcp.session import McpConnectionUnavailableError
+from airaider.tools.mcp.client import _errored_tool_output
+from airaider.tools.mcp.naming import namespaced_tool_name
+from airaider.tools.mcp.registry import MCP_REGISTRY_CONTEXT_KEY, McpRegistry
+from airaider.tools.mcp.session import McpConnectionUnavailableError
 
 
 if TYPE_CHECKING:

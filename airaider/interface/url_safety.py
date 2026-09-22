@@ -5,7 +5,7 @@ from __future__ import annotations
 import ipaddress
 from urllib.parse import SplitResult, urlsplit
 
-from strix.interface.terminal_text import has_terminal_control
+from airaider.interface.terminal_text import has_terminal_control
 
 
 def is_safe_web_url(

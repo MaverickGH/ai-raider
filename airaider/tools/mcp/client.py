@@ -4,7 +4,7 @@ Given one :class:`McpConnectionConfig` per server, :func:`connect_mcp_servers`
 connects each server, counts the tools it offers (honoring the connection's
 allowlist), and returns the live sessions. It does NOT register anything as an
 agent tool: under the generic-dispatch model the run holds these sessions in a
-per-run :class:`~strix.tools.mcp.registry.McpRegistry`, and the agent reaches
+per-run :class:`~airaider.tools.mcp.registry.McpRegistry`, and the agent reaches
 them through the two dispatch tools (``describe_mcp`` / ``call_mcp``), which call
 :func:`dispatch_mcp_call` here to run one tool and serialize its result.
 
@@ -32,8 +32,8 @@ from agents.mcp import (
 from mcp.client.stdio import stdio_client
 from mcp.shared._httpx_utils import create_mcp_http_client
 
-from strix.tools.mcp.failures import HttpStatusRecorder
-from strix.tools.mcp.session import McpConnectionUnavailableError, SupervisedMcpSession
+from airaider.tools.mcp.failures import HttpStatusRecorder
+from airaider.tools.mcp.session import McpConnectionUnavailableError, SupervisedMcpSession
 
 
 if TYPE_CHECKING:
@@ -41,8 +41,8 @@ if TYPE_CHECKING:
 
     import httpx
 
-    from strix.tools.mcp.config import McpConnectionConfig
-    from strix.tools.mcp.registry import McpConnectionRequest, McpRegistry
+    from airaider.tools.mcp.config import McpConnectionConfig
+    from airaider.tools.mcp.registry import McpConnectionRequest, McpRegistry
 
     # Runs on one tool call's structured result before it reaches the agent.
     # Called ``result_transform(label, structured_result)`` and its return value
@@ -60,10 +60,10 @@ logger = logging.getLogger(__name__)
 class ConnectedMcpServer(NamedTuple):
     """One successfully connected MCP connection and how many tools it offers.
 
-    ``session`` is the :class:`~strix.tools.mcp.session.SupervisedMcpSession` that
+    ``session`` is the :class:`~airaider.tools.mcp.session.SupervisedMcpSession` that
     owns the live connection on its own task, so the caller cleans it up when the
     run ends (``await session.aclose()``) and hands it to the run's
-    :class:`~strix.tools.mcp.registry.McpRegistry`; ``name`` and ``tool_count``
+    :class:`~airaider.tools.mcp.registry.McpRegistry`; ``name`` and ``tool_count``
     let the caller show the user a startup summary and fill the prompt inventory;
     ``notes`` carries the connection's optional free-text description so the
     caller can surface it as the connection's purpose in the inventory.
@@ -222,7 +222,7 @@ async def dispatch_mcp_call(
     Shared single dispatch point for the generic ``call_mcp`` tool. Calls
     ``server.call_tool`` with the tool's unprefixed name, then:
 
-    - with a ``result_transform`` (strix-pro's sanitizer), hands the parsed
+    - with a ``result_transform`` (airaider-pro's sanitizer), hands the parsed
       :class:`CallToolResult` to it as ``result_transform(label, structured)`` and
       returns whatever the transform returns; or
     - without one, serializes the result the way the agents SDK does (see
@@ -284,7 +284,7 @@ async def connect_mcp_servers(
 ) -> list[ConnectedMcpServer]:
     """Connect each MCP config on its own supervising task and return the sessions.
 
-    Each connection becomes a :class:`~strix.tools.mcp.session.SupervisedMcpSession`
+    Each connection becomes a :class:`~airaider.tools.mcp.session.SupervisedMcpSession`
     that owns ``connect()``, the held-open session, and ``cleanup()`` on one
     dedicated task, so a later background failure in one session is contained to
     that task and never cancels the run. Returns one :class:`ConnectedMcpServer`
@@ -298,7 +298,7 @@ async def connect_mcp_servers(
     re-raised, so nothing is orphaned.
 
     Nothing is registered as an agent tool: the caller builds a per-run
-    :class:`~strix.tools.mcp.registry.McpRegistry` from these sessions, and the
+    :class:`~airaider.tools.mcp.registry.McpRegistry` from these sessions, and the
     agent reaches each tool on demand through ``describe_mcp`` / ``call_mcp``.
     """
     connected: list[ConnectedMcpServer] = []

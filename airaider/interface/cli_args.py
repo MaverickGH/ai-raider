@@ -1,4 +1,4 @@
-"""Command-line argument parsing for the ``strix`` scan entrypoint."""
+"""Command-line argument parsing for the ``airaider`` scan entrypoint."""
 
 from __future__ import annotations
 
@@ -7,12 +7,12 @@ import os
 import sys
 from pathlib import Path
 
-from strix.config import apply_config_override
-from strix.config.settings import DEFAULT_MAX_TURNS
-from strix.core.paths import run_dir_for, runtime_state_dir
-from strix.interface.scan_setup import attach_workspace_mount, build_targets_info
-from strix.interface.update_check import self_update
-from strix.interface.utils import (
+from airaider.config import apply_config_override
+from airaider.config.settings import DEFAULT_MAX_TURNS
+from airaider.core.paths import run_dir_for, runtime_state_dir
+from airaider.interface.scan_setup import attach_workspace_mount, build_targets_info
+from airaider.interface.update_check import self_update
+from airaider.interface.utils import (
     check_mountable_dir,
     collect_local_sources,
     resolve_workspace_files,
@@ -301,13 +301,13 @@ Examples:
             parser.error(f"--mcp-config file not found: {args.mcp_config}")
         # The MCP loader reads this env var as its config-path override, so
         # setting it here makes the flag win over the default location.
-        os.environ["STRIX_MCP_CONFIG"] = str(mcp_config_path)
+        os.environ["AIRAIDER_MCP_CONFIG"] = str(mcp_config_path)
 
     # The MCP loader reads these as its per-run include/exclude selection.
     if args.mcp_server:
-        os.environ["STRIX_MCP_ONLY"] = ",".join(args.mcp_server)
+        os.environ["AIRAIDER_MCP_ONLY"] = ",".join(args.mcp_server)
     if args.mcp_exclude:
-        os.environ["STRIX_MCP_EXCLUDE"] = ",".join(args.mcp_exclude)
+        os.environ["AIRAIDER_MCP_EXCLUDE"] = ",".join(args.mcp_exclude)
 
     if args.update:
         sys.exit(0 if self_update() else 1)
@@ -377,7 +377,7 @@ Examples:
 
 def _load_resume_state(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
     """Populate ``args.targets_info`` and friends from a prior run's run.json."""
-    from strix.report.writer import read_run_record
+    from airaider.report.writer import read_run_record
 
     run_dir = run_dir_for(args.resume)
     state_path = run_dir / "run.json"

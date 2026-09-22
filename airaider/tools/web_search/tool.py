@@ -11,7 +11,7 @@ from urllib.parse import urlsplit, urlunsplit
 import requests
 from agents import RunContextWrapper, function_tool
 
-from strix.config import load_settings
+from airaider.config import load_settings
 
 
 if TYPE_CHECKING:
@@ -283,7 +283,7 @@ def _do_get_contents(urls: list[str]) -> dict[str, Any]:
             "success": False,
             "error": (
                 "Page fetching needs the Exa provider "
-                "(operator pinned STRIX_WEB_SEARCH_PROVIDER to perplexity). "
+                "(operator pinned AIRAIDER_WEB_SEARCH_PROVIDER to perplexity). "
                 "Use web_search instead"
             ),
         }

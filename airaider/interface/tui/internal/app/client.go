@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/usestrix/strix/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
 )
 
 const (
@@ -38,11 +38,11 @@ type Client struct {
 func ConnectInherited(fdValue string) (*Client, error) {
 	fd, err := strconv.ParseUint(fdValue, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("invalid STRIX_TUI_FD: %w", err)
+		return nil, fmt.Errorf("invalid AIRAIDER_TUI_FD: %w", err)
 	}
-	file := os.NewFile(uintptr(fd), "strix-tui-ipc")
+	file := os.NewFile(uintptr(fd), "airaider-tui-ipc")
 	if file == nil {
-		return nil, fmt.Errorf("invalid STRIX_TUI_FD %d", fd)
+		return nil, fmt.Errorf("invalid AIRAIDER_TUI_FD %d", fd)
 	}
 	connection, err := net.FileConn(file)
 	_ = file.Close()
@@ -65,17 +65,17 @@ func newClient(connection io.ReadWriteCloser) *Client {
 // parent. POSIX uses an inherited descriptor; Windows uses an authenticated
 // one-use loopback connection because pass_fds is unavailable there.
 func ConnectFromEnvironment() (*Client, error) {
-	if fd := os.Getenv("STRIX_TUI_FD"); fd != "" {
-		_ = os.Unsetenv("STRIX_TUI_FD")
+	if fd := os.Getenv("AIRAIDER_TUI_FD"); fd != "" {
+		_ = os.Unsetenv("AIRAIDER_TUI_FD")
 		return ConnectInherited(fd)
 	}
 
-	address := os.Getenv("STRIX_TUI_ADDR")
-	token := os.Getenv("STRIX_TUI_TOKEN")
-	_ = os.Unsetenv("STRIX_TUI_ADDR")
-	_ = os.Unsetenv("STRIX_TUI_TOKEN")
+	address := os.Getenv("AIRAIDER_TUI_ADDR")
+	token := os.Getenv("AIRAIDER_TUI_TOKEN")
+	_ = os.Unsetenv("AIRAIDER_TUI_ADDR")
+	_ = os.Unsetenv("AIRAIDER_TUI_TOKEN")
 	if address == "" || token == "" {
-		return nil, fmt.Errorf("STRIX_TUI_FD or STRIX_TUI_ADDR and STRIX_TUI_TOKEN are required")
+		return nil, fmt.Errorf("AIRAIDER_TUI_FD or AIRAIDER_TUI_ADDR and AIRAIDER_TUI_TOKEN are required")
 	}
 
 	connection, err := net.DialTimeout("tcp", address, 10*time.Second)

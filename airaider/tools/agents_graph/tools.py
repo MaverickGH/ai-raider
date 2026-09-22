@@ -12,11 +12,11 @@ from typing import Any, Literal, get_args
 
 from agents import RunContextWrapper, function_tool
 
-from strix.core.agents import Status, coordinator_from_context
-from strix.core.execution import notify_parent_on_terminal
-from strix.core.hooks import LLM_TURN_KEY
-from strix.report.state import get_global_report_state
-from strix.skills import validate_requested_skills
+from airaider.core.agents import Status, coordinator_from_context
+from airaider.core.execution import notify_parent_on_terminal
+from airaider.core.hooks import LLM_TURN_KEY
+from airaider.report.state import get_global_report_state
+from airaider.skills import validate_requested_skills
 
 
 _ACTIVE_STATUSES: frozenset[str] = frozenset({"running", "waiting"})

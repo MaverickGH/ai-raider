@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from agents import RunContextWrapper, function_tool
 
-from strix.skills import load_skills, validate_requested_skills
+from airaider.skills import load_skills, validate_requested_skills
 
 
 @function_tool(timeout=10)
@@ -22,7 +22,7 @@ async def load_skill(ctx: RunContextWrapper, skills: list[str]) -> str:
     Args:
         skills: List of skill names (e.g. ``["xss", "sql_injection"]``).
             Max 5. Names match the bare files under
-            ``strix/skills/<category>/<name>.md``.
+            ``airaider/skills/<category>/<name>.md``.
     """
     del ctx
     requested = list(skills or [])

@@ -9,7 +9,7 @@ apart from "never looked".
 This module assembles the artifact that answers it. Two kinds of statement go
 in, and they are kept apart on purpose:
 
-- ``agent_reported`` — the coverage ledger (:mod:`strix.tools.coverage.tools`).
+- ``agent_reported`` — the coverage ledger (:mod:`airaider.tools.coverage.tools`).
   Rich and specific, but it is an agent's account of its own work.
 - ``machine_observed`` — facts the runtime recorded regardless of what any
   agent claimed: which agents ran and how they terminated, which skills they
@@ -32,8 +32,8 @@ import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from strix.report.writer import atomic_write_text
-from strix.skills import get_available_skills
+from airaider.report.writer import atomic_write_text
+from airaider.skills import get_available_skills
 
 
 if TYPE_CHECKING:

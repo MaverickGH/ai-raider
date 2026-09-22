@@ -1,6 +1,6 @@
-"""SARIF 2.1.0 output for Strix vulnerability reports.
+"""SARIF 2.1.0 output for AiRaider vulnerability reports.
 
-Builds a GitHub code-scanning compatible SARIF document from Strix findings
+Builds a GitHub code-scanning compatible SARIF document from AiRaider findings
 so CI pipelines can upload findings via ``github/codeql-action/upload-sarif``,
 ingest into ASPM platforms, or normalise across scanners.
 
@@ -16,11 +16,11 @@ Integration:
 Design notes:
   * Rules are keyed on CWE (``id = CWE-NNN``), falling back to CVE, then
     to finding-id, then to a title slug. CWE values are normalised from
-    Strix output variants (``CWE-306``, ``cwe: 306``, ``306``) to the
+    AiRaider output variants (``CWE-306``, ``cwe: 306``, ``306``) to the
     canonical ``CWE-NNN`` form so dedup works across runs.
-  * SARIF only has three levels (error / warning / note). Strix's five
+  * SARIF only has three levels (error / warning / note). AiRaider's five
     severities collapse into them. The raw severity label and CVSS score
-    survive in ``result.properties.strix`` for downstream tools that can
+    survive in ``result.properties.airaider`` for downstream tools that can
     distinguish CRITICAL vs HIGH.
   * GitHub code-scanning uses ``rule.properties['security-severity']``
     (a 0.0-10.0 string) to rank alerts. We populate it from CVSS when
@@ -62,8 +62,8 @@ logger = logging.getLogger(__name__)
 
 SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 SARIF_VERSION = "2.1.0"
-TOOL_NAME = "Strix"
-TOOL_INFORMATION_URI = "https://strix.ai"
+TOOL_NAME = "AiRaider"
+TOOL_INFORMATION_URI = "https://github.com/MaverickGH/ai-raider"
 
 # Synthetic anchor for findings that have no safe code location. SARIF
 # requires every result to carry at least one location, and GitHub
@@ -76,8 +76,8 @@ TOOL_INFORMATION_URI = "https://strix.ai"
 _SYNTHETIC_LOCATION_URI = "SECURITY.md"
 
 
-# SARIF only has three result levels; Strix's five severities collapse here.
-# Original label survives in ``result.properties.strix.severity``.
+# SARIF only has three result levels; AiRaider's five severities collapse here.
+# Original label survives in ``result.properties.airaider.severity``.
 _SEVERITY_TO_LEVEL = {
     "critical": "error",
     "high": "error",
@@ -177,7 +177,7 @@ _CWE_TO_STRIDE: dict[str, tuple[str, ...]] = {
 
 # Default for unmapped / no-CWE findings: tampering + information-disclosure is
 # the most-common shape for an unclassified bug (matches the fork's and
-# strix-triage's DEFAULT_STRIDE_LEGS convention).
+# airaider-triage's DEFAULT_STRIDE_LEGS convention).
 _DEFAULT_STRIDE_LEGS: tuple[str, ...] = ("T", "I")
 
 
@@ -215,7 +215,7 @@ def build_sarif_report(
     (DAST) targets that have no repository.
 
     ``coverage`` (optional) is the document from
-    :func:`strix.report.coverage.build_coverage_document`: its cleared
+    :func:`airaider.report.coverage.build_coverage_document`: its cleared
     surfaces become non-failing results and its completeness caveats become
     invocation notifications.
 
@@ -387,8 +387,8 @@ def build_sarif_document(
 def _apply_repository_context(run: dict[str, Any], context: dict[str, Any]) -> None:
     """Attach VCS provenance to a run for code-scanning alert binding.
 
-    ``automationDetails.id`` categorises the run (``strix/<owner>/<repo>``)
-    so multiple Strix runs against the same repo reconcile rather than pile
+    ``automationDetails.id`` categorises the run (``airaider/<owner>/<repo>``)
+    so multiple AiRaider runs against the same repo reconcile rather than pile
     up. ``versionControlProvenance`` records the exact repo + commit + branch
     the findings came from. Both are omitted when the corresponding context
     fields are absent (e.g. DAST-only scans).
@@ -400,7 +400,7 @@ def _apply_repository_context(run: dict[str, Any], context: dict[str, Any]) -> N
     ref = _string_value(context.get("ref"))
 
     if full_name:
-        run["automationDetails"] = {"id": f"strix/{full_name}"}
+        run["automationDetails"] = {"id": f"airaider/{full_name}"}
 
     if uri:
         provenance: dict[str, Any] = {"repositoryUri": uri}
@@ -427,7 +427,7 @@ def _apply_repository_context(run: dict[str, Any], context: dict[str, Any]) -> N
 
 
 def _build_rule(rule_id: str, report: dict[str, Any]) -> dict[str, Any]:
-    """Build a SARIF rule descriptor from a Strix finding."""
+    """Build a SARIF rule descriptor from a AiRaider finding."""
     title = _string_value(report.get("title")) or rule_id
     full_description = _string_value(report.get("description")) or title
     help_text = _help_text(report, full_description)
@@ -513,26 +513,26 @@ def _result_properties(
     *,
     is_synthetic: bool = False,
 ) -> dict[str, Any]:
-    """Strix-specific metadata for downstream consumers.
+    """AiRaider-specific metadata for downstream consumers.
 
     The top-level ``security-severity`` matches GitHub code-scanning's
-    expected property. Strix-specific fields are namespaced under
-    ``strix`` so generic SARIF consumers don't see them by default.
+    expected property. AiRaider-specific fields are namespaced under
+    ``airaider`` so generic SARIF consumers don't see them by default.
     """
     properties: dict[str, Any] = {
         "security-severity": _security_severity(report),
     }
     if class_fingerprint:
         # Surfaced at top level so cross-rename dismissal tooling can
-        # filter alerts by it without parsing the nested strix.* tree.
-        properties["strix_vuln_class_hash"] = class_fingerprint
+        # filter alerts by it without parsing the nested airaider.* tree.
+        properties["airaider_vuln_class_hash"] = class_fingerprint
     if is_synthetic:
         # Top-level so reviewers + downstream automation can filter
-        # synthetic-anchored alerts without parsing the nested strix.*
+        # synthetic-anchored alerts without parsing the nested airaider.*
         # tree.
         properties["synthetic_location"] = True
 
-    strix: dict[str, Any] = {}
+    airaider: dict[str, Any] = {}
     for key in (
         "id",
         "severity",
@@ -554,11 +554,11 @@ def _result_properties(
     ):
         value = report.get(key)
         if value not in (None, ""):
-            strix[key] = value
+            airaider[key] = value
 
     dependency_metadata = report.get("dependency_metadata")
     if isinstance(dependency_metadata, dict) and dependency_metadata:
-        strix["dependency_metadata"] = dependency_metadata
+        airaider["dependency_metadata"] = dependency_metadata
 
     # SARIF is written for external upload (code-scanning / ASPM), so it must
     # NOT carry the weaponized exploit payload — that stays a local run
@@ -574,10 +574,10 @@ def _result_properties(
             poc["description"] = poc_description
         if poc_script:
             poc["script_available"] = True
-        strix["poc"] = poc
+        airaider["poc"] = poc
 
-    if strix:
-        properties["strix"] = strix
+    if airaider:
+        properties["airaider"] = airaider
 
     return properties
 
@@ -585,7 +585,7 @@ def _result_properties(
 def _build_fixes(report: dict[str, Any]) -> list[dict[str, Any]] | None:
     """Build SARIF ``fixes`` from a finding's code-location fix pairs.
 
-    Strix findings carry the suggested change inline on each code
+    AiRaider findings carry the suggested change inline on each code
     location as ``fix_before`` + ``fix_after``. We map every location
     that has both (and a safe repo-relative URI + start line) into a
     SARIF ``artifactChange``, replacing the finding's region with the
@@ -642,7 +642,7 @@ def _build_fixes(report: dict[str, Any]) -> list[dict[str, Any]] | None:
 # Coverage
 # ---------------------------------------------------------------------------
 
-_COVERAGE_RULE_PREFIX = "strix-coverage"
+_COVERAGE_RULE_PREFIX = "airaider-coverage"
 
 # ``reported`` is absent on purpose: those surfaces are already in ``results``
 # as ``fail`` findings.
@@ -696,7 +696,7 @@ def _build_coverage_result(
         "message": {"text": message},
         "locations": [{"logicalLocations": [{"fullyQualifiedName": surface}]}],
         "properties": {
-            "strix": {
+            "airaider": {
                 "coverage_outcome": entry.get("outcome", ""),
                 "risk_area": risk_area,
                 "surface": surface,
@@ -862,7 +862,7 @@ def _sarif_uri(file_path: str) -> str | None:
 def _rule_id(report: dict[str, Any]) -> str:
     """Choose a stable SARIF rule id, preferring CWE → CVE → finding-id → slug.
 
-    CWE values are normalised from Strix output variants (``CWE-306``,
+    CWE values are normalised from AiRaider output variants (``CWE-306``,
     ``cwe: 306``, ``306``) to the canonical ``CWE-NNN`` form. Without
     normalisation, the same weakness across runs dedups to separate rules.
     """
@@ -880,7 +880,7 @@ def _rule_id(report: dict[str, Any]) -> str:
     if finding_id:
         return finding_id
 
-    title = _string_value(report.get("title")) or "strix-finding"
+    title = _string_value(report.get("title")) or "airaider-finding"
     return _slugify(title)
 
 
@@ -967,7 +967,7 @@ def _primary_fingerprint(
 
       - rule_id (already CWE-normalised by ``_rule_id``)
       - first SARIF location's URI + startLine — these come from
-        Strix's ``code_locations[].file`` and ``start_line`` which
+        AiRaider's ``code_locations[].file`` and ``start_line`` which
         are sourced from the actual finding evidence, not synthesized
       - HTTP method + endpoint when present (BOLA/IDOR/missing-authz
         findings carry these explicitly in the report dict)
@@ -1008,7 +1008,7 @@ def _primary_fingerprint(
             # startLine in fingerprint is debatable: line shifts in
             # surrounding code re-fingerprint. The alternative — drop
             # line — collides multiple findings per file. We include
-            # line because Strix code_locations carry the SINK line,
+            # line because AiRaider code_locations carry the SINK line,
             # which moves only when the vulnerable code itself moves;
             # lines surfacing from cosmetic edits in unrelated parts
             # of the file don't shift it.
@@ -1116,7 +1116,7 @@ def _help_uri_for(rule_id: str) -> str | None:
 
 
 def _sarif_level(severity: Any) -> str:
-    """Map Strix severity labels to SARIF result levels."""
+    """Map AiRaider severity labels to SARIF result levels."""
     normalised = (_string_value(severity) or "").lower()
     return _SEVERITY_TO_LEVEL.get(normalised, "note")
 
@@ -1182,4 +1182,4 @@ def _slugify(value: str) -> str:
     """Convert arbitrary finding text into a stable lowercase slug."""
     chars = [char.lower() if char.isalnum() else "-" for char in value]
     slug = "-".join(part for part in "".join(chars).split("-") if part)
-    return slug or "strix-finding"
+    return slug or "airaider-finding"

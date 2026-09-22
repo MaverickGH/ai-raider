@@ -11,8 +11,8 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from strix.interface.tui.backend.projection import sanitize_terminal_text
-from strix.interface.tui.backend.protocol import (
+from airaider.interface.tui.backend.projection import sanitize_terminal_text
+from airaider.interface.tui.backend.protocol import (
     MAX_COLLECTION_FRAME_BYTES,
     MAX_COMMAND_BYTES,
     PROTOCOL_CAPABILITIES,
@@ -25,7 +25,7 @@ from strix.interface.tui.backend.protocol import (
 if TYPE_CHECKING:
     import socket
 
-    from strix.interface.tui.backend.controller import TuiController
+    from airaider.interface.tui.backend.controller import TuiController
 
 logger = logging.getLogger(__name__)
 

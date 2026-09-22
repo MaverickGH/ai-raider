@@ -1,4 +1,4 @@
-// Extracted ProviderIcon from strix-app's AddRepositoryDialog. The dialog itself
+// Extracted ProviderIcon from airaider-app's AddRepositoryDialog. The dialog itself
 // (and its next/link dependency) is dropped; the IssueSidebar only needs this SVG
 // switch to badge a finding's source-control provider. Web-app targets resolve to
 // provider === null and never reach here (they render a globe icon instead).

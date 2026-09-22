@@ -16,8 +16,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-_SCAN_ID: ContextVar[str | None] = ContextVar("strix_scan_id", default=None)
-_AGENT_ID: ContextVar[str | None] = ContextVar("strix_agent_id", default=None)
+_SCAN_ID: ContextVar[str | None] = ContextVar("airaider_scan_id", default=None)
+_AGENT_ID: ContextVar[str | None] = ContextVar("airaider_agent_id", default=None)
 
 
 def set_scan_id(scan_id: str) -> None:
@@ -35,7 +35,7 @@ def set_agent_id(agent_id: str | None) -> None:
     _AGENT_ID.set(agent_id)
 
 
-class _StrixContextFilter(logging.Filter):
+class _AiRaiderContextFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         record.scan_id = _SCAN_ID.get() or "-"
         record.agent_id = _AGENT_ID.get() or "-"
@@ -47,7 +47,7 @@ _DATEFMT = "%Y-%m-%d %H:%M:%S"
 
 
 # Third-party loggers that get noisy at DEBUG. Capped so the file isn't
-# drowned in their internals when STRIX_DEBUG=1.
+# drowned in their internals when AIRAIDER_DEBUG=1.
 _NOISY_LIBS: tuple[str, ...] = (
     "httpx",
     "httpcore",
@@ -58,11 +58,11 @@ _NOISY_LIBS: tuple[str, ...] = (
 )
 
 
-_HANDLER_TAG = "_strix_scan_handler"
+_HANDLER_TAG = "_airaider_scan_handler"
 
 
 # ``openai.agents`` is the openai-agents SDK's canonical logger root.
-_TRACKED_ROOTS: tuple[str, ...] = ("strix", "openai.agents")
+_TRACKED_ROOTS: tuple[str, ...] = ("airaider", "openai.agents")
 
 _STDOUT_QUIET_ROOTS: frozenset[str] = frozenset({"openai.agents"})
 
@@ -78,7 +78,7 @@ class _StdoutQuietFilter(logging.Filter):
 
 
 def configure_dependency_logging() -> None:
-    """Quiet dependency logging/warnings that obscure Strix scan logs."""
+    """Quiet dependency logging/warnings that obscure AiRaider scan logs."""
     litellm = sys.modules.get("litellm")
     if litellm is not None:
         with contextlib.suppress(Exception):
@@ -124,7 +124,7 @@ def setup_scan_logging(run_dir: Path, *, debug: bool | None = None) -> Callable[
             created if missing and opened append-mode (so re-runs of the
             same scan_id concatenate cleanly).
         debug: When ``True``, stderr handler runs at DEBUG instead of
-            ERROR. ``None`` (default) reads ``STRIX_DEBUG`` env: ``1`` /
+            ERROR. ``None`` (default) reads ``AIRAIDER_DEBUG`` env: ``1`` /
             ``true`` / ``yes`` / ``on`` enables debug.
 
     Returns:
@@ -135,7 +135,7 @@ def setup_scan_logging(run_dir: Path, *, debug: bool | None = None) -> Callable[
     configure_dependency_logging()
 
     if debug is None:
-        debug = (os.environ.get("STRIX_DEBUG") or "").strip().lower() in {
+        debug = (os.environ.get("AIRAIDER_DEBUG") or "").strip().lower() in {
             "1",
             "true",
             "yes",
@@ -146,7 +146,7 @@ def setup_scan_logging(run_dir: Path, *, debug: bool | None = None) -> Callable[
     log_path = run_dir / "ai-raider.log"
 
     formatter = logging.Formatter(_FORMAT, datefmt=_DATEFMT)
-    context_filter = _StrixContextFilter()
+    context_filter = _AiRaiderContextFilter()
 
     file_handler = logging.FileHandler(log_path, mode="a", encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)

@@ -1,4 +1,4 @@
-"""Artifact writers for Strix scan reports."""
+"""Artifact writers for AiRaider scan reports."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from pygments.lexers import PythonLexer, get_lexer_by_name, guess_lexer
 from pygments.lexers.special import TextLexer
 from pygments.util import ClassNotFound
 
-from strix.core.paths import run_record_path
+from airaider.core.paths import run_record_path
 
 
 if TYPE_CHECKING:

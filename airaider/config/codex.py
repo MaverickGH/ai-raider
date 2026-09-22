@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 
-from strix.utils.secret_files import write_secret_text
+from airaider.utils.secret_files import write_secret_text
 
 
 if TYPE_CHECKING:
@@ -105,7 +105,7 @@ def logout() -> None:
 
 @contextlib.contextmanager
 def _refresh_guard() -> Iterator[None]:
-    """Serialize token refresh within (lock) and across (flock) Strix processes,
+    """Serialize token refresh within (lock) and across (flock) AiRaider processes,
     so concurrent runs can't both spend the single-use refresh token."""
     with _refresh_lock:
         try:
@@ -368,7 +368,7 @@ def build_openai_client() -> AsyncOpenAI:
         event_hooks={"request": [_auth_hook]},
     )
     return AsyncOpenAI(
-        api_key="strix-codex-oauth",  # placeholder; the hook overwrites Authorization
+        api_key="airaider-codex-oauth",  # placeholder; the hook overwrites Authorization
         base_url=CODEX_BASE_URL,
         http_client=http_client,
         default_headers={

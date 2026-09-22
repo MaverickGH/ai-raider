@@ -12,9 +12,9 @@ if TYPE_CHECKING:
 
 from agents.tool import ToolOutputImage
 
-from strix.core.paths import runtime_state_dir
-from strix.interface.tui.history import load_session_history
-from strix.tools.mcp import resolve_mcp_call
+from airaider.core.paths import runtime_state_dir
+from airaider.interface.tui.history import load_session_history
+from airaider.tools.mcp import resolve_mcp_call
 
 
 class TuiLiveView:
@@ -32,7 +32,7 @@ class TuiLiveView:
         """Event fields naming the MCP server a tool call went out to, if any.
 
         Delegates to the shared engine resolver :func:`resolve_mcp_call` so a
-        dispatch call is attributed the same way here and in strix-pro's tracer.
+        dispatch call is attributed the same way here and in airaider-pro's tracer.
         The projection has no live registry, so it passes none: it reports the
         connection and tool read from the call's arguments and leaves the provider
         out. Empty for every other tool, which is what tells an interface to
@@ -448,16 +448,16 @@ def _session_message_text(item: dict[str, Any]) -> str:
 # opening rather than just a leading bracket keeps pasted JSON, markdown links and
 # a typed "[URGENT] stop" out of it.
 _INTERNAL_TURN_PREFIXES = (
-    # strix.core.agents._message_to_session_item: everything the coordinator
+    # airaider.core.agents._message_to_session_item: everything the coordinator
     # delivers from another agent or from the system, which wraps the stall,
-    # terminal and budget-extension notices in strix.core.execution too.
+    # terminal and budget-extension notices in airaider.core.execution too.
     "[Message from ",
-    # strix.core.inputs.child_initial_input: a subagent's parent context.
+    # airaider.core.inputs.child_initial_input: a subagent's parent context.
     "== Inherited context from parent",
-    # strix.core.execution: the no-tool-call recovery nudge, both modes.
+    # airaider.core.execution: the no-tool-call recovery nudge, both modes.
     "Your previous message ended a turn without a tool call.",
     "Your previous response ended the autonomous run without a lifecycle tool call.",
-    # strix.core.hooks: budget warnings, the only notices injected unwrapped.
+    # airaider.core.hooks: budget warnings, the only notices injected unwrapped.
     *(
         f"[{label}] {subject}"
         for label in ("NOTICE", "URGENT", "CRITICAL")

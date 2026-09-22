@@ -8,7 +8,7 @@ import sqlite3
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from strix.core.paths import runtime_state_dir
+from airaider.core.paths import runtime_state_dir
 
 
 if TYPE_CHECKING:

@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from strix.core.paths import runtime_state_dir
-from strix.report.state import ReportState
-from strix.tools.coverage.tools import _record_impl, hydrate_coverage_from_disk
+from airaider.core.paths import runtime_state_dir
+from airaider.report.state import ReportState
+from airaider.tools.coverage.tools import _record_impl, hydrate_coverage_from_disk
 
 
 if TYPE_CHECKING:

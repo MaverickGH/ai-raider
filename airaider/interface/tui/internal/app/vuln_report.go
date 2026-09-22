@@ -11,7 +11,7 @@ import (
 
 	"github.com/alecthomas/chroma/v2/lexers"
 
-	"github.com/usestrix/strix/tui/internal/render"
+	"github.com/MaverickGH/ai-raider/tui/internal/render"
 )
 
 var backtickRun = regexp.MustCompile("`+")

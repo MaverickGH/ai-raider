@@ -26,7 +26,7 @@ def get_version() -> str:
     try:
         return version("ai-raider-agent")
     except PackageNotFoundError:
-        logger.debug("strix-agent version lookup failed", exc_info=True)
+        logger.debug("airaider-agent version lookup failed", exc_info=True)
         return "unknown"
 
 
@@ -52,7 +52,7 @@ def base_props() -> dict[str, Any]:
         "os": platform.system().lower(),
         "arch": platform.machine(),
         "python": f"{sys.version_info.major}.{sys.version_info.minor}",
-        "strix_version": get_version(),
+        "airaider_version": get_version(),
     }
 
 

@@ -8,9 +8,9 @@ from typing import Any, cast
 import pytest
 from agents.tool import FunctionTool
 
-from strix.agents import factory
-from strix.tools.notes.tools import list_notes
-from strix.tools.reporting.tool import list_reports
+from airaider.agents import factory
+from airaider.tools.notes.tools import list_notes
+from airaider.tools.reporting.tool import list_reports
 
 
 def _capturing_tool(

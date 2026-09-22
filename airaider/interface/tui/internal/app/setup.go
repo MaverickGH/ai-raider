@@ -9,7 +9,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/usestrix/strix/tui/internal/render"
+	"github.com/MaverickGH/ai-raider/tui/internal/render"
 )
 
 func (m Model) submit(value string) (tea.Model, tea.Cmd) {
@@ -365,7 +365,7 @@ func (m Model) setupHeaderView(fit setupFit) string {
 			rows = append(rows, "")
 		}
 	case logoCompact:
-		rows = append(rows, center.Render(lipgloss.NewStyle().Bold(true).Foreground(brightGreen).Render("STRIX")))
+		rows = append(rows, center.Render(lipgloss.NewStyle().Bold(true).Foreground(brightGreen).Render("AIRAIDER")))
 	}
 	if fit.tagline {
 		rows = append(rows, center.Render(render.Dim().Render("Open-source AI hackers for your apps")))
@@ -373,7 +373,7 @@ func (m Model) setupHeaderView(fit setupFit) string {
 	return strings.Join(rows, "\n")
 }
 
-// banner is the Strix wordmark: block letters with a bevelled edge.
+// banner is the AiRaider wordmark: block letters with a bevelled edge.
 const banner = ` ███████╗████████╗██████╗ ██╗██╗  ██╗
  ██╔════╝╚══██╔══╝██╔══██╗██║╚██╗██╔╝
  ███████╗   ██║   ██████╔╝██║ ╚███╔╝
@@ -443,7 +443,7 @@ func (m Model) setupSummaryView(width int) string {
 		}
 	} else {
 		chips = append(chips, render.Col(amber).Render("○ no model")+
-			render.Dim().Render(" · set STRIX_LLM or configure one in your config"))
+			render.Dim().Render(" · set AIRAIDER_LLM or configure one in your config"))
 	}
 	if m.snapshot.MaxBudgetUSD != nil {
 		chips = append(chips, render.Dim().Render(fmt.Sprintf("$%.2f budget", *m.snapshot.MaxBudgetUSD)))

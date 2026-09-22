@@ -13,7 +13,7 @@ propagated to the main task, and the whole scan died with a bare
 because cleanup ran on a different task than connect.
 
 The fix, mirroring how child agents run on their own ``asyncio.create_task``
-(see :func:`strix.core.execution.spawn_child_agent`): give each connection its
+(see :func:`airaider.core.execution.spawn_child_agent`): give each connection its
 own dedicated supervising task that owns ``connect()``, the session's held-open
 lifetime, and ``cleanup()``. Three consequences:
 
@@ -36,7 +36,7 @@ stays usable. Other classified failures are retried on the rebuilt session and t
 if they keep failing, temporarily quarantine the connection. Authentication failures
 and repeated transient exhaustion permanently retire a connection.
 
-Security: the connection's :class:`~strix.tools.mcp.config.McpConnectionConfig`
+Security: the connection's :class:`~airaider.tools.mcp.config.McpConnectionConfig`
 holds a live bearer credential and is kept here in memory only, on the same
 in-process object that already holds the live session. It is never logged,
 serialized into the run's event stream, or written to disk; :meth:`__repr__`
@@ -54,8 +54,8 @@ import time
 import weakref
 from typing import TYPE_CHECKING, Any, Literal, cast
 
-from strix.tools.mcp.config import DEFAULT_MAX_CONCURRENT_CALLS
-from strix.tools.mcp.failures import FailureInfo, HttpStatusRecorder, classify
+from airaider.tools.mcp.config import DEFAULT_MAX_CONCURRENT_CALLS
+from airaider.tools.mcp.failures import FailureInfo, HttpStatusRecorder, classify
 
 
 if TYPE_CHECKING:
@@ -64,8 +64,8 @@ if TYPE_CHECKING:
     from agents.mcp import MCPServer
     from mcp.types import Tool as MCPTool
 
-    from strix.tools.mcp.client import ResultTransform
-    from strix.tools.mcp.config import McpConnectionConfig
+    from airaider.tools.mcp.client import ResultTransform
+    from airaider.tools.mcp.config import McpConnectionConfig
 
     # One operation to run against the live session, e.g. ``list_tools`` or a tool
     # call. Runs on the supervising task (supervised sessions) or inline (adopted
@@ -148,7 +148,7 @@ class SupervisedMcpSession:
       the server on itself and then serves calls handed to it over a queue. This is
       the path that contains a background session failure to one task.
     - :meth:`adopt` for an *adopted* session: the caller already holds a connected
-      server (strix-pro's cloud sessions, and the test fakes). There is no
+      server (airaider-pro's cloud sessions, and the test fakes). There is no
       supervising task; calls run inline against the given server. Reconnect works
       only when a config was supplied.
 
@@ -373,7 +373,7 @@ class SupervisedMcpSession:
         is unavailable. A call rejection keeps the connection usable because the
         provider rejected the request, not the session.
         """
-        from strix.tools.mcp.client import dispatch_mcp_call
+        from airaider.tools.mcp.client import dispatch_mcp_call
 
         async def job(server: MCPServer) -> Any:
             return await dispatch_mcp_call(
@@ -386,11 +386,11 @@ class SupervisedMcpSession:
 
         outcome = await self._run_job(job, phase="call")
         if outcome.call_failure is not None:
-            from strix.tools.mcp.client import _errored_tool_output
+            from airaider.tools.mcp.client import _errored_tool_output
 
             return _errored_tool_output(self._call_rejected_message(outcome.call_failure))
         if outcome.dead:
-            from strix.tools.mcp.client import _errored_tool_output
+            from airaider.tools.mcp.client import _errored_tool_output
 
             return _errored_tool_output(self._unavailable_message())
         return outcome.value
@@ -695,7 +695,7 @@ class SupervisedMcpSession:
         same task before the error propagates, so a failed connect never orphans
         an MCP subprocess or half-open HTTP session.
         """
-        from strix.tools.mcp.client import _build_server
+        from airaider.tools.mcp.client import _build_server
 
         if self._config is None:
             raise RuntimeError(f"MCP connection {self._name!r} has no config to connect")

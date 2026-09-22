@@ -1,4 +1,4 @@
-"""Build SandboxAgents for root + child Strix runs."""
+"""Build SandboxAgents for root + child AiRaider runs."""
 
 from __future__ import annotations
 
@@ -16,9 +16,9 @@ from agents.sandbox.errors import InvalidManifestPathError
 from agents.tool import CustomTool, FunctionTool, Tool
 from pydantic import ValidationError
 
-from strix.agents.prompt import render_system_prompt
-from strix.config import load_settings
-from strix.tools.agents_graph.tools import (
+from airaider.agents.prompt import render_system_prompt
+from airaider.config import load_settings
+from airaider.tools.agents_graph.tools import (
     agent_finish,
     create_agent,
     send_message_to_agent,
@@ -26,20 +26,20 @@ from strix.tools.agents_graph.tools import (
     view_agent_graph,
     wait_for_agents,
 )
-from strix.tools.coverage.tools import list_coverage, record_coverage, update_coverage
-from strix.tools.finish.tool import finish_scan
-from strix.tools.load_skill.tool import load_skill
-from strix.tools.mcp import call_mcp, describe_mcp, list_mcps
-from strix.tools.notes.tools import (
+from airaider.tools.coverage.tools import list_coverage, record_coverage, update_coverage
+from airaider.tools.finish.tool import finish_scan
+from airaider.tools.load_skill.tool import load_skill
+from airaider.tools.mcp import call_mcp, describe_mcp, list_mcps
+from airaider.tools.notes.tools import (
     create_note,
     delete_note,
     get_note,
     list_notes,
     update_note,
 )
-from strix.tools.nullish import is_nullish
-from strix.tools.output_store import bound_and_store, bound_text
-from strix.tools.proxy.tools import (
+from airaider.tools.nullish import is_nullish
+from airaider.tools.output_store import bound_and_store, bound_text
+from airaider.tools.proxy.tools import (
     list_requests,
     list_sitemap,
     repeat_request,
@@ -47,21 +47,21 @@ from strix.tools.proxy.tools import (
     view_request,
     view_sitemap_entry,
 )
-from strix.tools.reporting.tool import (
+from airaider.tools.reporting.tool import (
     create_dependency_report,
     create_vulnerability_report,
     get_report,
     list_reports,
     update_vulnerability_report,
 )
-from strix.tools.respond.tool import respond_to_user
-from strix.tools.thinking.tool import think
-from strix.tools.threat_model.tools import (
+from airaider.tools.respond.tool import respond_to_user
+from airaider.tools.thinking.tool import think
+from airaider.tools.threat_model.tools import (
     amend_threat_model,
     get_threat_model,
     save_threat_model,
 )
-from strix.tools.todo.tools import (
+from airaider.tools.todo.tools import (
     create_todo,
     delete_todo,
     list_todos,
@@ -69,7 +69,7 @@ from strix.tools.todo.tools import (
     mark_todo_pending,
     update_todo,
 )
-from strix.tools.web_search.tool import web_get_contents, web_search
+from airaider.tools.web_search.tool import web_get_contents, web_search
 
 
 if TYPE_CHECKING:
@@ -141,7 +141,7 @@ def _format_tool_error(exc: Exception) -> str:
 
 def _with_bounded_result(tool: FunctionTool) -> FunctionTool:
     """Cap a tool's result size before it enters history (idempotent)."""
-    if getattr(tool, "_strix_bounded", False):
+    if getattr(tool, "_airaider_bounded", False):
         return tool
     invoke_tool = tool.on_invoke_tool
 
@@ -149,7 +149,7 @@ def _with_bounded_result(tool: FunctionTool) -> FunctionTool:
         return await _bound_result(await invoke_tool(ctx, raw_input))
 
     tool.on_invoke_tool = invoke
-    tool._strix_bounded = True  # type: ignore[attr-defined]
+    tool._airaider_bounded = True  # type: ignore[attr-defined]
     return tool
 
 
@@ -253,7 +253,7 @@ def _coerce_arguments(raw_input: str, schema: dict[str, Any], *, nullish: bool =
 
 
 def _with_coerced_arguments(tool: FunctionTool) -> FunctionTool:
-    if getattr(tool, "_strix_coerced", False):
+    if getattr(tool, "_airaider_coerced", False):
         return tool
     invoke_tool = tool.on_invoke_tool
     schema = tool.params_json_schema
@@ -263,7 +263,7 @@ def _with_coerced_arguments(tool: FunctionTool) -> FunctionTool:
         return await invoke_tool(ctx, _coerce_arguments(raw_input, schema, nullish=nullish))
 
     tool.on_invoke_tool = invoke
-    tool._strix_coerced = True  # type: ignore[attr-defined]
+    tool._airaider_coerced = True  # type: ignore[attr-defined]
     return tool
 
 
@@ -603,8 +603,8 @@ _BASE_TOOLS: tuple[Tool, ...] = (
 
 
 # Extra tools registered for scan agents. Mirrors
-# ``strix.runtime.backends.register_backend``: register before the first
-# ``build_strix_agent`` call and every agent (root + children) gets them.
+# ``airaider.runtime.backends.register_backend``: register before the first
+# ``build_airaider_agent`` call and every agent (root + children) gets them.
 _EXTRA_TOOLS: list[Tool] = []
 
 
@@ -644,7 +644,7 @@ def registered_agent_tools() -> tuple[Tool, ...]:
     return tuple(_EXTRA_TOOLS)
 
 
-def build_strix_agent(
+def build_airaider_agent(
     *,
     name: str = "agent",
     skills: list[str] | None = None,
@@ -751,7 +751,7 @@ def make_child_factory(
     """
 
     def _factory(*, name: str, skills: list[str]) -> SandboxAgent[Any]:
-        return build_strix_agent(
+        return build_airaider_agent(
             name=name,
             skills=skills,
             is_root=False,

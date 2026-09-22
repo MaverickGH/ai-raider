@@ -5,8 +5,8 @@ from unittest.mock import patch
 import litellm
 from agents.usage import Usage
 
-from strix.report.pricing import resolve_litellm_model
-from strix.report.usage import LLMUsageLedger
+from airaider.report.pricing import resolve_litellm_model
+from airaider.report.usage import LLMUsageLedger
 
 
 def test_resolves_common_bare_model_names() -> None:

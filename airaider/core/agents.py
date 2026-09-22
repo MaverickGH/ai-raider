@@ -1,4 +1,4 @@
-"""SDK-native state for Strix's addressable agent graph."""
+"""SDK-native state for AiRaider's addressable agent graph."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 
-from strix.core.sessions import session_write_lock
+from airaider.core.sessions import session_write_lock
 
 
 if TYPE_CHECKING:

@@ -1,8 +1,8 @@
 """Scan bootstrap shared by the CLI entry point and the TUI setup flow.
 
 Target resolution, run preparation, model preflight, and start-of-run
-telemetry live here so ``strix.interface.main`` (the CLI) and
-``strix.interface.tui.runtime`` (interactive setup) depend on one module
+telemetry live here so ``airaider.interface.main`` (the CLI) and
+``airaider.interface.tui.runtime`` (interactive setup) depend on one module
 instead of each other. Everything raises ordinary exceptions; rendering
 errors and exiting the process is the caller's job.
 """
@@ -14,9 +14,9 @@ import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from strix.config import Settings, codex, load_settings
-from strix.core.paths import run_dir_for
-from strix.interface.utils import (
+from airaider.config import Settings, codex, load_settings
+from airaider.core.paths import run_dir_for
+from airaider.interface.utils import (
     assign_workspace_subdirs,
     clone_repository,
     collect_local_sources,
@@ -31,8 +31,8 @@ from strix.interface.utils import (
     stage_api_specs,
     write_fetched_collection,
 )
-from strix.telemetry import posthog, scarf
-from strix.utils.api_spec import (
+from airaider.telemetry import posthog, scarf
+from airaider.utils.api_spec import (
     SpecParseError,
     fetch_postman_collection,
     fetch_postman_environment,
@@ -66,12 +66,12 @@ async def preflight_model_connection(
     """Verify the configured model route before starting a scan."""
     from agents.models.interface import ModelTracing
 
-    from strix.config.models import StrixProvider, configure_sdk_model_defaults
-    from strix.core.inputs import make_model_settings
+    from airaider.config.models import AiRaiderProvider, configure_sdk_model_defaults
+    from airaider.core.inputs import make_model_settings
 
     resolved_settings = load_settings() if settings is None else settings
     configure_sdk_model_defaults(resolved_settings)
-    model = StrixProvider().get_model(model_name)
+    model = AiRaiderProvider().get_model(model_name)
     request_settings = make_model_settings(
         None,
         model_name=model_name,
@@ -237,7 +237,7 @@ def telemetry_start(args: argparse.Namespace) -> None:
 
 
 def _persist_run_record(args: argparse.Namespace) -> None:
-    from strix.report.writer import write_run_record
+    from airaider.report.writer import write_run_record
 
     run_dir = run_dir_for(args.run_name)
     run_dir.mkdir(parents=True, exist_ok=True)

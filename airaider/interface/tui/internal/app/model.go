@@ -12,7 +12,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/usestrix/strix/tui/internal/protocol"
+	"github.com/MaverickGH/ai-raider/tui/internal/protocol"
 )
 
 type wireMsg protocol.Envelope
@@ -42,8 +42,8 @@ type collectionAssembly struct {
 }
 
 // appVersion is the package version string shown on the splash and stats panel.
-// It is set by main from the STRIX_VERSION env var (see go_tui.py), matching
-// Python's get_package_version() which reads the installed "strix-agent" version
+// It is set by main from the AIRAIDER_VERSION env var (see go_tui.py), matching
+// Python's get_package_version() which reads the installed "airaider-agent" version
 // and falls back to "dev".
 var appVersion = "dev"
 
@@ -177,7 +177,7 @@ const (
 // the column is too narrow to show the full one without clipping it.
 const (
 	setupPlaceholder      = "Describe what to test, or name a target"
-	setupPlaceholderShort = "What should Strix test?"
+	setupPlaceholderShort = "What should AiRaider test?"
 	chatPlaceholder       = "Send a message"
 )
 
@@ -286,7 +286,7 @@ func New(client *Client) Model {
 
 func (m Model) Init() tea.Cmd { return tea.Batch(readWire(m.client), splashTick(), sweepTick()) }
 
-// splashTick drives the splash "Starting Strix Agent" shimmer at Python's 0.1s cadence.
+// splashTick drives the splash "Starting AiRaider Agent" shimmer at Python's 0.1s cadence.
 func splashTick() tea.Cmd {
 	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg { return splashTickMsg(t) })
 }
