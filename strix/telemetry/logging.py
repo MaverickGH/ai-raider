@@ -120,7 +120,7 @@ def setup_scan_logging(run_dir: Path, *, debug: bool | None = None) -> Callable[
     """Attach scan-scoped handlers; return a teardown callable.
 
     Args:
-        run_dir: Per-scan output directory. ``{run_dir}/strix.log`` is
+        run_dir: Per-scan output directory. ``{run_dir}/ai-raider.log`` is
             created if missing and opened append-mode (so re-runs of the
             same scan_id concatenate cleanly).
         debug: When ``True``, stderr handler runs at DEBUG instead of
@@ -143,7 +143,7 @@ def setup_scan_logging(run_dir: Path, *, debug: bool | None = None) -> Callable[
         }
 
     run_dir.mkdir(parents=True, exist_ok=True)
-    log_path = run_dir / "strix.log"
+    log_path = run_dir / "ai-raider.log"
 
     formatter = logging.Formatter(_FORMAT, datefmt=_DATEFMT)
     context_filter = _StrixContextFilter()
