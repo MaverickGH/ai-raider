@@ -59,15 +59,41 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 ./containers/build-sandbox.sh --full   # полностью независимый из Kali-Dockerfile (долго)
 ```
 
-## Интеграция с Cyber Galaxy
+## Ключ через Keychain (macOS)
 
-Находки прогона можно импортировать в приватную админку платформы Cyber Galaxy (раздел «Пентест-находки», только для владельцев):
+Чтобы не держать ключ в открытом виде и не экспортировать его каждый раз, храни его в macOS Keychain — `run-scan.sh` подтянет автоматически:
 
 ```bash
-./scripts/export-findings.sh    # покажет путь к vulnerabilities.json последнего прогона
+./scripts/keychain-set.sh OPENAI_API_KEY            # вставь ключ скрытым вводом
+./scripts/keychain-set.sh STRIX_LLM openai/gpt-5.4  # модель
+./run-scan.sh https://разрешённая-цель standard      # ключ/модель берутся из Keychain
 ```
 
-Дальше в админке: **Пентест-находки → Импорт прогона** — загрузи `vulnerabilities.json` (и по желанию `penetration_test_report.md`). Находки чувствительные и в публичный контент не попадают.
+Поддерживаются `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `STRIX_LLM`, `LLM_API_BASE` (сервис `ai-raider.local.<ИМЯ>`). Значение ключа вводится скрыто и нигде не печатается.
+
+## Интеграция с Cyber Galaxy
+
+Находки прогона попадают в приватную админку платформы Cyber Galaxy (раздел «Пентест-находки», только для владельцев). Два пути:
+
+**Прямой пуш (без ручной загрузки файла).** Задай URL платформы — и находки уйдут в неё автоматически:
+
+```bash
+export CG_PLATFORM_URL=http://localhost:3000   # адрес платформы
+export CG_AUTH_COOKIE=<owner-cookie cg_auth>   # в production; в dev не нужен при ADMIN_DEV_BYPASS=1
+./scripts/export-findings.sh                   # соберёт тело и запушит находки последнего прогона
+```
+
+Тонкий контроль — напрямую через bridge-скрипт:
+
+```bash
+python3 scripts/push_findings.py               # последний прогон
+python3 scripts/push_findings.py --run <кат>   # конкретный прогон
+python3 scripts/push_findings.py --dry-run     # собрать тело и показать, не отправляя
+```
+
+**Вручную.** Без `CG_PLATFORM_URL` скрипт лишь покажет путь к `vulnerabilities.json`; дальше в админке: **Пентест-находки → Импорт прогона** — загрузи `vulnerabilities.json` (и по желанию `penetration_test_report.md`).
+
+Находки чувствительные и в публичный контент не попадают.
 
 ## Лицензия
 
