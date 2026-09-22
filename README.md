@@ -65,11 +65,11 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 
 ```bash
 ./scripts/keychain-set.sh OPENAI_API_KEY            # вставь ключ скрытым вводом
-./scripts/keychain-set.sh STRIX_LLM openai/gpt-5.4  # модель
+./scripts/keychain-set.sh AIRAIDER_LLM openai/gpt-5.4 # модель
 ./run-scan.sh https://разрешённая-цель standard      # ключ/модель берутся из Keychain
 ```
 
-Поддерживаются `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `STRIX_LLM`, `LLM_API_BASE` (сервис `ai-raider.local.<ИМЯ>`). Значение ключа вводится скрыто и нигде не печатается.
+Поддерживаются `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `AIRAIDER_LLM` (или `STRIX_LLM`), `LLM_API_BASE` (сервис `ai-raider.local.<ИМЯ>`). Значение ключа вводится скрыто и нигде не печатается.
 
 ## Интеграция с Cyber Galaxy
 

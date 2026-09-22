@@ -337,7 +337,7 @@ class TuiController:
             raise TypeError("mount_working_dir must be a boolean")
         model = (load_settings().llm.model or "").strip()
         if not model:
-            raise ValueError("No model configured. Set STRIX_LLM first.")
+            raise ValueError("No model configured. Set AIRAIDER_LLM first.")
         if self._on_start is None:
             raise RuntimeError("Scan start is unavailable")
         if not self.targets and not mount_working_dir:
