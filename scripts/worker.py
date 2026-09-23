@@ -23,8 +23,10 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import signal
 import socket
 import subprocess
 import sys
@@ -90,6 +92,44 @@ def submit_findings(job_id: str, payload: dict) -> None:
     print(f"[findings] job={job_id} → {st}: {body if isinstance(body, str) else body.get('runId', body)}")
 
 
+def cancel_requested(job_id: str) -> bool:
+    """Опрос платформы: попросил ли пользователь остановить задачу."""
+    try:
+        st, body = _request("GET", f"/api/worker/scans/{job_id}")
+        return st == 200 and isinstance(body, dict) and bool(body.get("cancelRequested"))
+    except urllib.error.URLError:
+        return False
+
+
+def _kill_group(proc: subprocess.Popen) -> None:
+    """Убить процесс скана вместе с группой (SIGTERM → SIGKILL)."""
+    with contextlib.suppress(ProcessLookupError, PermissionError):
+        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+    try:
+        proc.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        with contextlib.suppress(Exception):
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+
+
+def run_scan_monitored(job_id: str, cmd: list[str], env: dict, time_limit_sec: int | None) -> tuple[str, int | None]:
+    """Запустить скан и следить: таймаут и запрос отмены убивают процесс.
+    Возвращает ('finished', rc) | ('timeout', None) | ('canceled', None)."""
+    proc = subprocess.Popen(cmd, env=env, cwd=str(ROOT), start_new_session=True)
+    deadline = time.time() + time_limit_sec if time_limit_sec else None
+    while True:
+        try:
+            return "finished", proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        if deadline and time.time() > deadline:
+            _kill_group(proc)
+            return "timeout", None
+        if cancel_requested(job_id):
+            _kill_group(proc)
+            return "canceled", None
+
+
 def allowlist_args(job: dict) -> list[str]:
     """HOST:PORT для egress-gateway: цель из задачи + эндпоинты модели из env."""
     pairs: list[str] = []
@@ -128,16 +168,25 @@ def run_job(job: dict) -> None:
         return
 
     try:
-        # 2. Запуск ai-raider в сетевом скоупе.
+        # 2. Запуск ai-raider в сетевом скоупе, с капом стоимости и таймаутом/отменой.
         env = dict(os.environ)
         env["AIRAIDER_SELF_SERVE"] = "1"
         env["AIRAIDER_DOCKER_SANDBOX_NETWORK"] = net_name
-        scan = subprocess.run(
-            [str(ROOT / ".venv" / "bin" / "ai-raider"), "-n", "-t", target, "--scan-mode", mode],
-            env=env, cwd=str(ROOT),
-        )
-        if scan.returncode not in (0, 2):  # 0 чисто, 2 находки есть — оба ок
-            report_status(job_id, "failed", f"скан завершился с кодом {scan.returncode}")
+        cmd = [str(ROOT / ".venv" / "bin" / "ai-raider"), "-n", "-t", target, "--scan-mode", mode]
+        budget = job.get("budgetUsd")
+        if budget:
+            cmd += ["--max-budget", str(budget)]
+        time_limit = job.get("timeLimitSec")
+
+        outcome, rc = run_scan_monitored(job_id, cmd, env, int(time_limit) if time_limit else None)
+        if outcome == "canceled":
+            report_status(job_id, "canceled", "остановлено пользователем")
+            return
+        if outcome == "timeout":
+            report_status(job_id, "failed", f"превышен таймаут {time_limit}s")
+            return
+        if rc not in (0, 2):  # 0 чисто, 2 находки есть — оба ок
+            report_status(job_id, "failed", f"скан завершился с кодом {rc}")
             return
 
         # 3. Собрать находки последнего прогона и сдать платформе.
