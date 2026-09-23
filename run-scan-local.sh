@@ -4,6 +4,8 @@
 # Использование: ./run-scan-local.sh <url|путь> [quick|standard|deep]
 set -euo pipefail
 cd "$(dirname "$0")"
+# подтянуть настройки из .env, если есть (модель/база можно задать там)
+[ -f .env ] && { set -a; . ./.env; set +a; }
 TARGET="${1:?Укажи цель: ./run-scan-local.sh <url|путь> [quick|standard|deep]}"
 MODE="${2:-quick}"
 export AIRAIDER_LLM="${AIRAIDER_LLM:-ollama/qwen2.5:32b}"
