@@ -196,6 +196,19 @@ Examples:
     )
 
     parser.add_argument(
+        "--report-lang",
+        type=str,
+        choices=["en", "ru"],
+        default=(os.environ.get("AIRAIDER_REPORT_LANG", "en").strip().lower() or "en")
+        if os.environ.get("AIRAIDER_REPORT_LANG", "en").strip().lower() in ("en", "ru")
+        else "en",
+        help=(
+            "Language of report template labels/headers (model-produced content is "
+            "left as-is). 'en' (default) or 'ru'. Env: AIRAIDER_REPORT_LANG."
+        ),
+    )
+
+    parser.add_argument(
         "--scope-mode",
         type=str,
         choices=["auto", "diff", "full"],

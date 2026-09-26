@@ -81,8 +81,9 @@ Everything is written to `ai-raider_runs/<run-name>/`:
 
 View them in the browser with `ai-raider view`.
 
-> The reports are generated in Russian by default (a fork feature). The tooling and this
-> guide are in English.
+> Report template labels are English by default. For Russian labels, add
+> `--report-lang ru` (or set `AIRAIDER_REPORT_LANG=ru`). Model-produced content is left
+> as-is either way.
 
 ## Local, with no data leaving your machine
 

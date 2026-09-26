@@ -55,7 +55,7 @@ ai-raider -n -t ./path-to-app --scan-mode quick
 
 - Rebranded to "AI-Raider", CLI command `ai-raider`, config dir `~/.ai-raider`.
 - Telemetry off by default; cloud upsell removed from prompts.
-- **Russian reports**: the markdown pentest report and vulnerability cards are in Russian (model-produced values as-is).
+- **Bilingual reports**: report template labels/headers are English by default or Russian via `--report-lang ru` (or `AIRAIDER_REPORT_LANG`); model-produced content is left as-is.
 - **Own sandbox image** `ai-raider-sandbox:0.1.0` (see `containers/build-sandbox.sh`), independent of the upstream tag at runtime.
 - **Local models**: the `run-scan-local.sh` preset for Ollama/LM Studio with no cloud key.
 

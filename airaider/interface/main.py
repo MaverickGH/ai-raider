@@ -448,6 +448,10 @@ def main() -> None:
 
     args = parse_arguments()
 
+    from airaider.report.i18n import set_report_lang
+
+    set_report_lang(getattr(args, "report_lang", "en"))
+
     start_background_check()
     if not args.non_interactive and prompt_update_if_available(Console()):
         if is_binary_install() and sys.platform != "win32":

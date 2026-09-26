@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
+from airaider.report import i18n
 from airaider.report.writer import (
     atomic_write_text,
     read_run_record,
@@ -20,6 +21,32 @@ from airaider.report.writer import (
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+@pytest.fixture(autouse=True)
+def _russian_report_lang() -> Any:
+    """These assertions check the Russian template labels, so pin the report
+    language to ``ru`` for this module (default is now ``en``). Reset afterwards."""
+    i18n.set_report_lang("ru")
+    yield
+    i18n.set_report_lang("en")
+
+
+def test_report_lang_switch_labels() -> None:
+    report: dict[str, Any] = {
+        "id": "v1", "title": "SQLi", "severity": "high",
+        "timestamp": "2026-07-02", "target": "https://x", "description": "d",
+    }
+    i18n.set_report_lang("en")
+    en = render_vulnerability_md(report)
+    assert "**Severity:** HIGH" in en
+    assert "## Description" in en
+    assert "Критичность" not in en and "Описание" not in en
+
+    i18n.set_report_lang("ru")
+    ru = render_vulnerability_md(report)
+    assert "**Критичность:** HIGH" in ru
+    assert "## Описание" in ru
 
 
 def _sample_report(**overrides: Any) -> dict[str, Any]:
