@@ -66,6 +66,35 @@ LABELS: dict[str, dict[str, str]] = {
     "prev_severity": {"en": "severity", "ru": "критичность"},
     "prev_confidence": {"en": "confidence", "ru": "уверенность"},
     "reason": {"en": "Reason", "ru": "Причина"},
+    # --- PDF export (viewer) ---
+    "brand": {"en": "AI-Raider", "ru": "AI-Рейдер"},
+    "pdf_doc_title": {"en": "AI-Raider - security report", "ru": "AI-Рейдер — отчёт по безопасности"},
+    "pdf_kicker": {"en": "PENETRATION TEST REPORT", "ru": "ОТЧЁТ О ТЕСТИРОВАНИИ НА ПРОНИКНОВЕНИЕ"},
+    "pdf_cover_title": {"en": "Security Assessment", "ru": "Оценка безопасности"},
+    "confidential": {"en": "CONFIDENTIAL", "ru": "КОНФИДЕНЦИАЛЬНО"},
+    "m_target": {"en": "TARGET", "ru": "ЦЕЛЬ"},
+    "m_run": {"en": "RUN", "ru": "ПРОГОН"},
+    "m_scan_mode": {"en": "SCAN MODE", "ru": "РЕЖИМ СКАНА"},
+    "m_status": {"en": "STATUS", "ru": "СТАТУС"},
+    "m_started": {"en": "STARTED", "ru": "НАЧАТО"},
+    "m_completed": {"en": "COMPLETED", "ru": "ЗАВЕРШЕНО"},
+    "m_duration": {"en": "DURATION", "ru": "ДЛИТЕЛЬНОСТЬ"},
+    "exec_summary": {"en": "Executive Summary", "ru": "Сводка для руководства"},
+    "findings_section": {"en": "Findings", "ru": "Находки"},
+    "total_findings_fmt": {
+        "en": "<b>{n}</b> total findings across this assessment.",
+        "ru": "Всего находок: <b>{n}</b>.",
+    },
+    "methodology": {"en": "Methodology", "ru": "Методология"},
+    "recommendations": {"en": "Recommendations", "ru": "Рекомендации"},
+    "no_findings": {
+        "en": "No findings were recorded for this run.",
+        "ru": "Для этого прогона находок не зафиксировано.",
+    },
+    "untitled_finding": {"en": "Untitled finding", "ru": "Находка без названия"},
+    "poc": {"en": "Proof of concept", "ru": "Proof of Concept"},
+    "poc_script": {"en": "PoC script", "ru": "PoC-скрипт"},
+    "page_fmt": {"en": "Page {p} of {n}", "ru": "Страница {p} из {n}"},
 }
 
 

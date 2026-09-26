@@ -83,7 +83,8 @@ View them in the browser with `ai-raider view`.
 
 > Report template labels are English by default. For Russian labels, add
 > `--report-lang ru` (or set `AIRAIDER_REPORT_LANG=ru`). Model-produced content is left
-> as-is either way.
+> as-is either way. A Russian **PDF** (`ai-raider view` export) needs a Cyrillic system
+> font (DejaVu Sans, or Arial); without one the PDF labels fall back to English.
 
 ## Local, with no data leaving your machine
 
