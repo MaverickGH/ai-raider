@@ -88,30 +88,6 @@ On macOS you can instead keep the key in the Keychain so it is never exported in
 
 Supported: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (Keychain service `ai-raider.local.<NAME>`). Key values are entered hidden and never printed.
 
-## Cyber Galaxy integration
-
-Findings from a run can be imported into the private admin section of the Cyber Galaxy platform (the "Pentest findings" area, owners only). Two ways:
-
-**Direct push (no manual file upload).** Set the platform URL and findings are sent automatically:
-
-```bash
-export CG_PLATFORM_URL=http://localhost:3000   # platform address
-export CG_AUTH_COOKIE=<owner cg_auth cookie>   # in production; not needed in dev with ADMIN_DEV_BYPASS=1
-./scripts/export-findings.sh                   # builds the payload and pushes the latest run's findings
-```
-
-Fine-grained control — directly via the bridge script:
-
-```bash
-python3 scripts/push_findings.py               # latest run
-python3 scripts/push_findings.py --run <dir>   # a specific run
-python3 scripts/push_findings.py --dry-run     # build and show the payload without sending
-```
-
-**Manually.** Without `CG_PLATFORM_URL` the script only prints the path to `vulnerabilities.json`; then in the admin: **Pentest findings → Import run** — upload `vulnerabilities.json` (and optionally `penetration_test_report.md`).
-
-Findings are sensitive and never reach public content.
-
 ## Self-serve mode (letting people use it)
 
 A separate scenario — opening autonomous pentesting to **platform users**, so each one scans only their own resources and the service is not tied to the owner account. It is an offensive tool, so two barriers are required:
