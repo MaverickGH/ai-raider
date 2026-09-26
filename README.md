@@ -2,7 +2,7 @@
 
 [Русский](README.ru.md) · **English**
 
-> Autonomous AI pentesting. A fork of [usestrix/strix](https://github.com/usestrix/strix) (Apache-2.0), adapted for our needs.
+> Autonomous AI pentesting. An Apache-2.0 fork of [usestrix/strix](https://github.com/usestrix/strix), reworked to run self-hosted with any LLM.
 
 AI-Raider is a team of autonomous AI agents that pentest like real researchers: they do recon, run code in a sandbox, find vulnerabilities and confirm them with working proof-of-concept exploits, then propose fixes.
 
