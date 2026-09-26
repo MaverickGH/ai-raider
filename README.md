@@ -88,17 +88,6 @@ On macOS you can instead keep the key in the Keychain so it is never exported in
 
 Supported: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (Keychain service `ai-raider.local.<NAME>`). Key values are entered hidden and never printed.
 
-## Self-serve mode (letting people use it)
-
-A separate scenario — opening autonomous pentesting to **platform users**, so each one scans only their own resources and the service is not tied to the owner account. It is an offensive tool, so two barriers are required:
-
-1. **Target ownership verification** — the user proves the domain/repository is theirs (DNS TXT, a `/.well-known/…` file, or a file in the repository).
-2. **Sandbox network scope** — the running agent physically cannot reach anything but the proven target and the model endpoint (egress default-deny outside the container, because the sandbox has `NET_ADMIN` and confining it from inside is pointless).
-
-Full design spec (multi-tenancy without owner binding, verification, network scope, queue, cabinet, code integration points): **[SELF-SERVE-DESIGN.md](SELF-SERVE-DESIGN.md)**.
-
-The design/contract lives here; the platform-side implementation (verification, queue, cabinet) lives in the Cyber Galaxy repo. MVP to "safely open it to people" = sandbox scope + verification + queue-worker.
-
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Based on Strix (© Strix), with attribution preserved per the license terms.

@@ -52,7 +52,6 @@ logger = logging.getLogger(__name__)
 
 
 _SANDBOX_NETWORK_ENV = "AIRAIDER_DOCKER_SANDBOX_NETWORK"
-_SELF_SERVE_ENV = "AIRAIDER_SELF_SERVE"
 
 
 def _sandbox_network() -> str | None:
@@ -60,48 +59,11 @@ def _sandbox_network() -> str | None:
     return value or None
 
 
-def _self_serve() -> bool:
-    """Self-serve mode: the sandbox runs an untrusted user's scan, so it must not
-    reach the host or anything outside the per-scan egress allowlist.
-
-    The sandbox holds ``NET_ADMIN``/``NET_RAW`` and can rewrite its own iptables,
-    so confinement is enforced OUTSIDE the container: the orchestrator attaches it
-    to an ``--internal`` per-scan network fronted by an egress-gateway (see
-    ``containers/egress-gateway/``). Here we only drop the host-gateway route so
-    ``host.docker.internal`` cannot be used to reach the host, and require that a
-    sandbox network was injected (never docker's default bridge)."""
-    value = os.environ.get(_SELF_SERVE_ENV, "").strip().lower()
-    return value in ("1", "true", "yes", "on")
-
-
 def _apply_sandbox_network(create_kwargs: dict[str, Any]) -> None:
     network = _sandbox_network()
     if network:
         create_kwargs["network"] = network
         create_kwargs.pop("ports", None)
-
-
-def _apply_network_and_scope(create_kwargs: dict[str, Any]) -> None:
-    """Wire the sandbox network and, in self-serve mode, confine egress.
-
-    Local/trusted runs get a ``host.docker.internal`` host-gateway alias. In
-    self-serve mode (untrusted user scan) that alias is a path off the isolated
-    network to the host, so it is never added, and the sandbox must land on the
-    injected per-scan ``--internal`` network — starting on docker's default
-    bridge (unrestricted egress) is refused (fail closed)."""
-    self_serve = _self_serve()
-    if not self_serve:
-        extra_hosts = create_kwargs.setdefault("extra_hosts", {})
-        extra_hosts["host.docker.internal"] = "host-gateway"
-
-    _apply_sandbox_network(create_kwargs)
-
-    if self_serve and not create_kwargs.get("network"):
-        raise RuntimeError(
-            "AIRAIDER_SELF_SERVE is set but no sandbox network was injected via "
-            f"{_SANDBOX_NETWORK_ENV}; refusing to start an untrusted scan with "
-            "unrestricted egress."
-        )
 
 
 def _apply_resource_limits(create_kwargs: dict[str, Any]) -> None:
@@ -267,7 +229,10 @@ class AiRaiderDockerSandboxClient(DockerSandboxClient):
             if cap not in cap_add:
                 cap_add.append(cap)
 
-        _apply_network_and_scope(create_kwargs)
+        extra_hosts = create_kwargs.setdefault("extra_hosts", {})
+        extra_hosts["host.docker.internal"] = "host-gateway"
+
+        _apply_sandbox_network(create_kwargs)
         _apply_resource_limits(create_kwargs)
         _apply_log_limits(create_kwargs)
         _apply_run_labels(create_kwargs)
