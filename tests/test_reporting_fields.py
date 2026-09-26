@@ -1615,7 +1615,8 @@ def test_update_drops_reasoning_left_behind_by_the_field_it_describes(
     assert run_dir is not None
     markdown = (run_dir / "vulnerabilities" / "vuln-0009.md").read_text(encoding="utf-8")
     assert "version banner is the only signal" not in markdown
-    assert "Убрано как устаревшее: confidence_rationale, cvss_breakdown" in markdown
+    # Report language defaults to English; the "removed as stale" label follows it.
+    assert "Removed as stale: confidence_rationale, cvss_breakdown" in markdown
 
 
 def test_agent_revises_its_own_report_without_a_duplicate_verdict(

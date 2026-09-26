@@ -1,33 +1,33 @@
 #!/usr/bin/env bash
-# Bridge в Cyber Galaxy: показать находки последнего прогона и, если настроено,
-# запушить их прямо в приватную админку платформы (без ручной загрузки файла).
+# Bridge to Cyber Galaxy: show the latest run's findings and, if configured, push them
+# straight into the platform's private admin (no manual file upload).
 #
-# Прямой пуш включается, когда задан CG_PLATFORM_URL (плюс CG_AUTH_COOKIE в
-# production). Без него скрипт лишь показывает путь к файлу для ручного импорта.
+# Direct push turns on when CG_PLATFORM_URL is set (plus CG_AUTH_COOKIE in production).
+# Without it, the script only prints the file path for manual import.
 #
-#   CG_PLATFORM_URL   базовый URL платформы (напр. http://localhost:3000)
-#   CG_AUTH_COOKIE    owner-cookie cg_auth (JWT). Не нужен при ADMIN_DEV_BYPASS=1.
+#   CG_PLATFORM_URL   platform base URL (e.g. http://localhost:3000)
+#   CG_AUTH_COOKIE    owner cg_auth cookie (JWT). Not needed with ADMIN_DEV_BYPASS=1.
 #
-# Флаги пробрасываются в scripts/push_findings.py (--run <каталог>, --dry-run).
+# Flags are passed through to scripts/push_findings.py (--run <dir>, --dry-run).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 RUNS="ai-raider_runs"
-[ -d "$RUNS" ] || { echo "Нет каталога $RUNS — сначала запусти скан (./run-scan.sh …)."; exit 1; }
+[ -d "$RUNS" ] || { echo "No $RUNS directory - run a scan first (./run-scan.sh ...)."; exit 1; }
 LATEST="$(ls -1dt "$RUNS"/*/ 2>/dev/null | head -1 || true)"
-[ -n "${LATEST:-}" ] || { echo "Прогонов не найдено."; exit 1; }
+[ -n "${LATEST:-}" ] || { echo "No runs found."; exit 1; }
 
-echo "Последний прогон: $LATEST"
-echo "  находки: ${LATEST}vulnerabilities.json"
-echo "  отчёт:   ${LATEST}penetration_test_report.md"
+echo "Latest run: $LATEST"
+echo "  findings: ${LATEST}vulnerabilities.json"
+echo "  report:   ${LATEST}penetration_test_report.md"
 echo
 
 if [ -n "${CG_PLATFORM_URL:-}" ]; then
-  echo "CG_PLATFORM_URL задан — пушу находки в платформу напрямую."
+  echo "CG_PLATFORM_URL is set - pushing findings to the platform directly."
   echo
   exec python3 scripts/push_findings.py "$@"
 fi
 
-echo "Прямой пуш выключен (не задан CG_PLATFORM_URL)."
-echo "Варианты:"
-echo "  • Автопуш: export CG_PLATFORM_URL=http://localhost:3000 (+ CG_AUTH_COOKIE в prod), затем запусти скрипт снова."
-echo "  • Вручную: загрузи vulnerabilities.json в Cyber Galaxy → Админка → «Пентест-находки» → «Импорт прогона»."
+echo "Direct push is off (CG_PLATFORM_URL is not set)."
+echo "Options:"
+echo "  - Auto push: export CG_PLATFORM_URL=http://localhost:3000 (+ CG_AUTH_COOKIE in prod), then run again."
+echo "  - Manual: upload vulnerabilities.json in Cyber Galaxy -> Admin -> 'Pentest findings' -> 'Import run'."

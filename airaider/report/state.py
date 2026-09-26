@@ -14,6 +14,7 @@ from airaider.config import codex
 from airaider.config.loader import load_settings
 from airaider.core.paths import run_dir_for, runtime_state_dir
 from airaider.report.coverage import write_coverage
+from airaider.report.i18n import get_report_lang
 from airaider.report.pricing import resolve_litellm_model
 from airaider.report.sarif import write_sarif
 from airaider.report.writer import (
@@ -635,6 +636,8 @@ class ReportState:
                 "local_sources": config.get("local_sources", []),
                 "scope_mode": config.get("scope_mode", "auto"),
                 "diff_base": config.get("diff_base"),
+                # Persist the report language so the viewer PDF matches this run.
+                "report_lang": get_report_lang(),
             }
         )
 

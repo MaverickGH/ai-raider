@@ -14,6 +14,8 @@ the user's own hands. AiRaider cannot read the delivered report.
 from __future__ import annotations
 
 import html
+import logging
+import os
 import re
 import secrets
 from datetime import datetime
@@ -27,6 +29,8 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas as pdfcanvas
 from reportlab.platypus import (
     Flowable,
@@ -45,6 +49,7 @@ from airaider.interface.viewer.transcript import (
     read_vulnerabilities,
     severity_counts,
 )
+from airaider.report.i18n import get_report_lang, set_report_lang, t
 
 
 if TYPE_CHECKING:
@@ -69,10 +74,69 @@ _SEVERITY_COLORS = {
     "low": colors.HexColor("#2563eb"),
 }
 
+logger = logging.getLogger(__name__)
+
 # Helvetica stands in for Geist: a clean sans with no font file to ship.
+# These are reassigned per render by _resolve_fonts_and_lang: base-14 Helvetica has
+# no Cyrillic glyphs, so a Russian report swaps in a system Unicode TTF.
 _SANS = "Helvetica"
 _SANS_BOLD = "Helvetica-Bold"
 _MONO = "Courier"
+
+# Candidate (regular, bold) system TTFs with Cyrillic, tried in order. No font is
+# bundled, so we borrow one from the OS; if none exists, ru falls back to en labels.
+_CYRILLIC_FONT_CANDIDATES: tuple[tuple[str, str], ...] = (
+    ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+    ("/usr/share/fonts/dejavu/DejaVuSans.ttf",
+     "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf"),
+    ("/usr/share/fonts/TTF/DejaVuSans.ttf",
+     "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf"),
+    ("/Library/Fonts/Arial Unicode.ttf", "/Library/Fonts/Arial Unicode.ttf"),
+    ("/System/Library/Fonts/Supplemental/Arial.ttf",
+     "/System/Library/Fonts/Supplemental/Arial Bold.ttf"),
+    ("/Library/Fonts/Arial.ttf", "/Library/Fonts/Arial Bold.ttf"),
+    ("C:\\Windows\\Fonts\\arial.ttf", "C:\\Windows\\Fonts\\arialbd.ttf"),
+)
+
+_cyrillic_registered: tuple[str, str] | None = None
+
+
+def _register_cyrillic_fonts() -> tuple[str, str] | None:
+    """Register a system Unicode TTF (regular, bold) with Cyrillic, or return None."""
+    global _cyrillic_registered
+    if _cyrillic_registered is not None:
+        return _cyrillic_registered
+    for regular, bold in _CYRILLIC_FONT_CANDIDATES:
+        if not os.path.exists(regular):
+            continue
+        try:
+            pdfmetrics.registerFont(TTFont("AiRaiderSans", regular))
+            bold_path = bold if os.path.exists(bold) else regular
+            pdfmetrics.registerFont(TTFont("AiRaiderSans-Bold", bold_path))
+        except Exception:  # noqa: BLE001 - a broken font file must not crash the report
+            continue
+        _cyrillic_registered = ("AiRaiderSans", "AiRaiderSans-Bold")
+        return _cyrillic_registered
+    return None
+
+
+def _resolve_fonts_and_lang(lang: str) -> tuple[str, str, str]:
+    """Pick (sans, sans_bold, effective_lang) for the report.
+
+    Latin (en) uses Helvetica as before. Russian needs a Cyrillic TTF; if the host
+    has none, we fall back to English labels so the PDF stays readable instead of
+    rendering boxes."""
+    if lang != "ru":
+        return "Helvetica", "Helvetica-Bold", lang
+    fonts = _register_cyrillic_fonts()
+    if fonts:
+        return fonts[0], fonts[1], "ru"
+    logger.warning(
+        "No Cyrillic TTF found on this host; PDF report labels fall back to English. "
+        "Install DejaVu Sans (or Arial) for a Russian PDF.",
+    )
+    return "Helvetica", "Helvetica-Bold", "en"
 
 _PAGE_W, _PAGE_H = A4
 _INLINE_MD = MarkdownIt("commonmark", {"html": False, "linkify": False}).disable(
@@ -115,7 +179,7 @@ class _NumberedCanvas(pdfcanvas.Canvas):  # type: ignore[misc]  # reportlab base
     def _draw_footer(self, page: int, total: int) -> None:
         self.setFont(_SANS, 8)
         self.setFillColor(_FAINT)
-        self.drawCentredString(_PAGE_W / 2, 14 * mm, f"Page {page} of {total}")
+        self.drawCentredString(_PAGE_W / 2, 14 * mm, t("page_fmt").format(p=page, n=total))
 
 
 class _LogoMark(Flowable):  # type: ignore[misc]  # reportlab base is untyped
@@ -357,7 +421,7 @@ def _cover(
     styles: dict[str, ParagraphStyle], record: dict[str, Any], run_name: str
 ) -> list[Flowable]:
     header = Table(
-        [[_LogoMark(30), Paragraph("AI-Рейдер", styles["wordmark"])]],
+        [[_LogoMark(30), Paragraph(_esc(t("brand")), styles["wordmark"])]],
         colWidths=[38, _PAGE_W - 40 * mm - 38],
     )
     header.setStyle(
@@ -374,13 +438,13 @@ def _cover(
 
     target = primary_target(record) or "Target"
     meta_rows = [
-        ("TARGET", primary_target(record) or "unknown target"),
-        ("RUN", run_name),
-        ("SCAN MODE", str(record.get("scan_mode") or "n/a")),
-        ("STATUS", str(record.get("status") or "n/a")),
-        ("STARTED", _fmt_time(record.get("start_time"))),
-        ("COMPLETED", _fmt_time(record.get("end_time"))),
-        ("DURATION", _duration(record.get("start_time"), record.get("end_time"))),
+        (t("m_target"), primary_target(record) or "unknown target"),
+        (t("m_run"), run_name),
+        (t("m_scan_mode"), str(record.get("scan_mode") or "n/a")),
+        (t("m_status"), str(record.get("status") or "n/a")),
+        (t("m_started"), _fmt_time(record.get("start_time"))),
+        (t("m_completed"), _fmt_time(record.get("end_time"))),
+        (t("m_duration"), _duration(record.get("start_time"), record.get("end_time"))),
     ]
     meta_table = Table(
         [
@@ -401,7 +465,7 @@ def _cover(
         )
     )
 
-    confidential = Table([[Paragraph("CONFIDENTIAL", styles["confidential"])]], colWidths=[120])
+    confidential = Table([[Paragraph(_esc(t("confidential")), styles["confidential"])]], colWidths=[120])
     confidential.setStyle(
         TableStyle(
             [
@@ -417,9 +481,9 @@ def _cover(
     return [
         header,
         Spacer(1, 150),
-        Paragraph("PENETRATION TEST REPORT", styles["badge_label"]),
+        Paragraph(_esc(t("pdf_kicker")), styles["badge_label"]),
         Spacer(1, 20),
-        Paragraph("Security Assessment", styles["cover_title"]),
+        Paragraph(_esc(t("pdf_cover_title")), styles["cover_title"]),
         Paragraph(_esc(target), styles["cover_org"]),
         Spacer(1, 28),
         meta_table,
@@ -564,14 +628,14 @@ def _field_block(
 def _finding_flowables(
     styles: dict[str, ParagraphStyle], index: int, vuln: dict[str, Any]
 ) -> list[Flowable]:
-    title = vuln.get("title") or "Untitled finding"
+    title = vuln.get("title") or t("untitled_finding")
     severity = _normalize_severity(vuln.get("severity"))
 
     meta_bits = []
     if vuln.get("cvss") is not None:
         meta_bits.append(f"<b>CVSS</b> {_esc(vuln.get('cvss'))}")
     meta_bits.extend(
-        f"<b>{key.title()}</b> {_esc(vuln.get(key))}"
+        f"<b>{_esc(t(key))}</b> {_esc(vuln.get(key))}"
         for key in ("target", "endpoint", "method")
         if vuln.get(key)
     )
@@ -585,18 +649,18 @@ def _finding_flowables(
         header.append(Paragraph("&nbsp;&nbsp;".join(meta_bits), styles["meta_inline"]))
 
     story: list[Flowable] = [KeepTogether(header)]
-    story.extend(_field_block(styles, "Description", vuln.get("description")))
-    story.extend(_field_block(styles, "Impact", vuln.get("impact")))
-    story.extend(_field_block(styles, "Technical analysis", vuln.get("technical_analysis")))
-    story.extend(_field_block(styles, "Proof of concept", vuln.get("poc_description")))
+    story.extend(_field_block(styles, t("description"), vuln.get("description")))
+    story.extend(_field_block(styles, t("impact"), vuln.get("impact")))
+    story.extend(_field_block(styles, t("technical_analysis"), vuln.get("technical_analysis")))
+    story.extend(_field_block(styles, t("poc"), vuln.get("poc_description")))
     poc_script = _strip_code_fence(vuln.get("poc_script_code"))
-    story.extend(_field_block(styles, "PoC script", poc_script, code=True))
-    story.extend(_field_block(styles, "Evidence", vuln.get("evidence"), code=True))
+    story.extend(_field_block(styles, t("poc_script"), poc_script, code=True))
+    story.extend(_field_block(styles, t("evidence"), vuln.get("evidence"), code=True))
 
     remediation = vuln.get("remediation_steps")
     if isinstance(remediation, list):
         remediation = "\n".join(str(step) for step in remediation)
-    story.extend(_field_block(styles, "Remediation", remediation))
+    story.extend(_field_block(styles, t("remediation"), remediation))
 
     story.append(Spacer(1, 22))
     return story
@@ -606,11 +670,11 @@ def _overview_flowables(
     styles: dict[str, ParagraphStyle], record: dict[str, Any], total: int, counts: dict[str, int]
 ) -> list[Flowable]:
     story: list[Flowable] = [
-        _section(styles, "Executive Summary"),
+        _section(styles, t("exec_summary")),
         Spacer(1, 16),
         _severity_grid(styles, counts),
         Spacer(1, 10),
-        Paragraph(f"<b>{total}</b> total findings across this assessment.", styles["body"]),
+        Paragraph(t("total_findings_fmt").format(n=total), styles["body"]),
     ]
     scan_results = record.get("scan_results")
     if not isinstance(scan_results, dict):
@@ -620,9 +684,9 @@ def _overview_flowables(
         story.append(Spacer(1, 16))
         story.extend(_markdown_flowables(_strip_leading_heading(summary), styles))
     for label, key in (
-        ("Methodology", "methodology"),
-        ("Technical Analysis", "technical_analysis"),
-        ("Recommendations", "recommendations"),
+        (t("methodology"), "methodology"),
+        (t("technical_analysis"), "technical_analysis"),
+        (t("recommendations"), "recommendations"),
     ):
         value = scan_results.get(key)
         if isinstance(value, str) and value.strip():
@@ -636,6 +700,13 @@ def _overview_flowables(
 def generate_report_pdf(run_dir: Path) -> bytes:
     """Render a branded, full-detail PDF report for the run at ``run_dir``."""
     record = read_run_summary(run_dir)
+    # The PDF matches the language the scan was run with (persisted in run.json).
+    # Cyrillic needs a Unicode TTF; if the host lacks one, labels fall back to English.
+    lang = str(record.get("report_lang") or get_report_lang())
+    sans, sans_bold, effective_lang = _resolve_fonts_and_lang(lang)
+    global _SANS, _SANS_BOLD
+    _SANS, _SANS_BOLD = sans, sans_bold
+    set_report_lang(effective_lang)
     vulns = [v for v in read_vulnerabilities(run_dir) if isinstance(v, dict)]
     counts = severity_counts(vulns)
     run_name = str(record.get("run_name") or run_dir.name)
@@ -645,8 +716,8 @@ def generate_report_pdf(run_dir: Path) -> bytes:
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        title="AI-Рейдер — отчёт по безопасности",
-        author="AI-Рейдер",
+        title=t("pdf_doc_title"),
+        author=t("brand"),
         leftMargin=20 * mm,
         rightMargin=20 * mm,
         topMargin=22 * mm,
@@ -658,13 +729,13 @@ def generate_report_pdf(run_dir: Path) -> bytes:
     story.extend(_overview_flowables(styles, record, len(vulns), counts))
 
     story.append(PageBreak())
-    story.append(_section(styles, "Findings"))
+    story.append(_section(styles, t("findings_section")))
     story.append(Spacer(1, 16))
     if vulns:
         for index, vuln in enumerate(vulns, start=1):
             story.extend(_finding_flowables(styles, index, vuln))
     else:
-        story.append(Paragraph("No findings were recorded for this run.", styles["body"]))
+        story.append(Paragraph(t("no_findings"), styles["body"]))
 
     doc.build(story, canvasmaker=_NumberedCanvas)
     return buffer.getvalue()

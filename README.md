@@ -1,35 +1,37 @@
-# AI-Рейдер
+# AI-Raider
 
-> Автономный AI-пентест. Форк [usestrix/strix](https://github.com/usestrix/strix) (Apache-2.0), доработанный под наши задачи.
+[Русский](README.ru.md) · **English**
 
-AI-Рейдер — это команда автономных AI-агентов, которые проводят пентест как настоящие исследователи: ведут разведку, запускают код в песочнице, находят уязвимости и подтверждают их рабочими proof-of-concept, а затем предлагают исправления.
+> Autonomous AI pentesting. A fork of [usestrix/strix](https://github.com/usestrix/strix) (Apache-2.0), adapted for our needs.
 
-**Только для авторизованного тестирования.** Запускайте AI-Рейдер исключительно против собственных систем или целей, на которые у вас есть письменное разрешение.
+AI-Raider is a team of autonomous AI agents that pentest like real researchers: they do recon, run code in a sandbox, find vulnerabilities and confirm them with working proof-of-concept exploits, then propose fixes.
 
-**Развернуть у себя за пару минут** (свой ключ, любой LLM, ничего не уходит наружу) — см. **[SELF-HOST.md](SELF-HOST.md)**:
+**Authorized testing only.** Run AI-Raider strictly against your own systems or targets you have written permission to test.
+
+**Self-host in a couple of minutes** (your own key, any LLM, nothing leaves your machine) — see **[SELF-HOST.md](SELF-HOST.md)**:
 
 ```bash
 git clone https://github.com/MaverickGH/ai-raider && cd ai-raider
-./setup.sh            # проверит Docker/Python, поставит инструмент, создаст .env
-# впиши модель и ключ в .env (или блок Ollama — без ключа), затем:
-./run-scan.sh https://твой-стенд quick
+./setup.sh            # checks Docker/Python, installs the tool, creates .env
+# put your model and key in .env (or the Ollama block — no key needed), then:
+./run-scan.sh https://your-staging quick
 ```
 
-## Что это
+## What it is
 
-- Полный набор для пентеста из коробки: разведка, эксплуатация, валидация.
-- Мультиагентная оркестрация: команды AI-пентестеров работают параллельно.
-- Реальная проверка эксплойтов, а не ложные срабатывания статических сканеров.
-- CLI с понятными находками и рекомендациями по устранению.
-- Авто-фиксы и отчёты.
+- Full pentest toolkit out of the box: recon, exploitation, validation.
+- Multi-agent orchestration: teams of AI pentesters work in parallel.
+- Real exploit validation, not the false positives of static scanners.
+- CLI with clear findings and remediation guidance.
+- Auto-fixes and reports.
 
-## Требования
+## Requirements
 
 - Python 3.12+
-- Запущенный Docker (песочница для агентов)
-- API-ключ LLM (OpenAI, Anthropic, Google, OpenRouter и др. через LiteLLM)
+- Docker running (the agent sandbox)
+- An LLM API key (OpenAI, Anthropic, Google, OpenRouter, etc. via LiteLLM)
 
-## Установка (из исходников)
+## Install (from source)
 
 ```bash
 uv venv && source .venv/bin/activate
@@ -37,91 +39,90 @@ uv pip install -e .
 ai-raider --help
 ```
 
-## Быстрый старт
+## Quick start
 
 ```bash
-export AIRAIDER_LLM="openrouter/z-ai/glm-5.3"   # любой id модели LiteLLM
-export LLM_API_KEY="<ваш ключ>"
+export AIRAIDER_LLM="openrouter/z-ai/glm-5.3"   # any LiteLLM model id
+export LLM_API_KEY="<your key>"
 
-# headless-режим по разрешённой цели:
-ai-raider -n -t ./путь-к-приложению --scan-mode quick
+# headless run against an authorized target:
+ai-raider -n -t ./path-to-app --scan-mode quick
 ```
 
-> Интерактивный TUI требует Go-тулчейна для сборки; headless-режим работает без него.
+> The interactive TUI needs a Go toolchain to build; headless mode works without it.
 
-## Отличия от upstream (Strix)
+## Differences from upstream (Strix)
 
-- Ребрендинг в «AI-Рейдер», CLI-команда `ai-raider`, каталог конфигурации `~/.ai-raider`.
-- Телеметрия выключена по умолчанию; апселл облака убран из подсказок.
-- **Русские отчёты**: markdown-отчёт о пентесте и карточки уязвимостей на русском (значения от модели — как есть).
-- **Свой sandbox-образ** `ai-raider-sandbox:0.1.0` (см. `containers/build-sandbox.sh`), не зависит от тега upstream при запуске.
-- **Локальные модели**: пресет `run-scan-local.sh` для Ollama/LM Studio без облачного ключа.
+- Rebranded to "AI-Raider", CLI command `ai-raider`, config dir `~/.ai-raider`.
+- Telemetry off by default; cloud upsell removed from prompts.
+- **Bilingual reports**: report template labels/headers are English by default or Russian via `--report-lang ru` (or `AIRAIDER_REPORT_LANG`); model-produced content is left as-is.
+- **Own sandbox image** `ai-raider-sandbox:0.1.0` (see `containers/build-sandbox.sh`), independent of the upstream tag at runtime.
+- **Local models**: the `run-scan-local.sh` preset for Ollama/LM Studio with no cloud key.
 
-## Быстрые команды
+## Quick commands
 
 ```bash
-./run-scan.sh https://staging.твой-домен quick     # облачная модель (AIRAIDER_LLM + ключ провайдера)
-./run-scan-local.sh https://staging.твой-домен      # локальная модель (Ollama), без облака
+./run-scan.sh https://staging.your-domain quick     # cloud model (AIRAIDER_LLM + provider key)
+./run-scan-local.sh https://staging.your-domain      # local model (Ollama), no cloud
 
-# свой sandbox-образ:
-./containers/build-sandbox.sh          # быстрый брендированный (на базе upstream)
-./containers/build-sandbox.sh --full   # полностью независимый из Kali-Dockerfile (долго)
+# own sandbox image:
+./containers/build-sandbox.sh          # fast branded build (on top of upstream)
+./containers/build-sandbox.sh --full   # fully independent from the Kali Dockerfile (slow)
 ```
 
-## Ключ через Keychain (macOS)
+## Config via .env or Keychain
 
-Чтобы не держать ключ в открытом виде и не экспортировать его каждый раз, храни его в macOS Keychain — `run-scan.sh` подтянет автоматически:
+The simplest way is a `.env` file (cross-platform) — `run-scan.sh` and `run-scan-local.sh` pick it up automatically:
 
 ```bash
-./scripts/keychain-set.sh OPENAI_API_KEY            # вставь ключ скрытым вводом
-./scripts/keychain-set.sh AIRAIDER_LLM openai/gpt-5.4 # модель
-./run-scan.sh https://разрешённая-цель standard      # ключ/модель берутся из Keychain
+cp env.example .env   # then edit: pick one provider block, add your key (or use Ollama)
 ```
 
-Поддерживаются `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (сервис `ai-raider.local.<ИМЯ>`). Значение ключа вводится скрыто и нигде не печатается.
-
-## Интеграция с Cyber Galaxy
-
-Находки прогона попадают в приватную админку платформы Cyber Galaxy (раздел «Пентест-находки», только для владельцев). Два пути:
-
-**Прямой пуш (без ручной загрузки файла).** Задай URL платформы — и находки уйдут в неё автоматически:
+On macOS you can instead keep the key in the Keychain so it is never exported in plain text — `run-scan.sh` reads it automatically:
 
 ```bash
-export CG_PLATFORM_URL=http://localhost:3000   # адрес платформы
-export CG_AUTH_COOKIE=<owner-cookie cg_auth>   # в production; в dev не нужен при ADMIN_DEV_BYPASS=1
-./scripts/export-findings.sh                   # соберёт тело и запушит находки последнего прогона
+./scripts/keychain-set.sh OPENAI_API_KEY            # paste the key with hidden input
+./scripts/keychain-set.sh AIRAIDER_LLM openai/gpt-5.4 # model
+./run-scan.sh https://authorized-target standard      # key/model taken from Keychain
 ```
 
-Тонкий контроль — напрямую через bridge-скрипт:
+Supported: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (Keychain service `ai-raider.local.<NAME>`). Key values are entered hidden and never printed.
+
+## Cyber Galaxy integration
+
+Findings from a run can be imported into the private admin section of the Cyber Galaxy platform (the "Pentest findings" area, owners only). Two ways:
+
+**Direct push (no manual file upload).** Set the platform URL and findings are sent automatically:
 
 ```bash
-python3 scripts/push_findings.py               # последний прогон
-python3 scripts/push_findings.py --run <кат>   # конкретный прогон
-python3 scripts/push_findings.py --dry-run     # собрать тело и показать, не отправляя
+export CG_PLATFORM_URL=http://localhost:3000   # platform address
+export CG_AUTH_COOKIE=<owner cg_auth cookie>   # in production; not needed in dev with ADMIN_DEV_BYPASS=1
+./scripts/export-findings.sh                   # builds the payload and pushes the latest run's findings
 ```
 
-**Вручную.** Без `CG_PLATFORM_URL` скрипт лишь покажет путь к `vulnerabilities.json`; дальше в админке: **Пентест-находки → Импорт прогона** — загрузи `vulnerabilities.json` (и по желанию `penetration_test_report.md`).
+Fine-grained control — directly via the bridge script:
 
-Находки чувствительные и в публичный контент не попадают.
+```bash
+python3 scripts/push_findings.py               # latest run
+python3 scripts/push_findings.py --run <dir>   # a specific run
+python3 scripts/push_findings.py --dry-run     # build and show the payload without sending
+```
 
-## Self-serve режим (дать пользоваться людям)
+**Manually.** Without `CG_PLATFORM_URL` the script only prints the path to `vulnerabilities.json`; then in the admin: **Pentest findings → Import run** — upload `vulnerabilities.json` (and optionally `penetration_test_report.md`).
 
-Отдельный сценарий — открыть автономный пентест **пользователям платформы**, чтобы
-каждый сканировал только свои ресурсы, а сервис не был завязан на owner-аккаунт.
-Наступательный инструмент, поэтому нужны два барьера:
+Findings are sensitive and never reach public content.
 
-1. **Верификация владения целью** — пользователь доказывает, что домен/репозиторий его
-   (DNS TXT, файл `/.well-known/…`, или файл в репозитории).
-2. **Сетевой скоуп песочницы** — запущенный агент физически не может выйти никуда,
-   кроме доказанной цели и эндпоинта модели (egress default-deny вне контейнера, т.к.
-   у песочницы есть `NET_ADMIN` и изнутри ограничивать бесполезно).
+## Self-serve mode (letting people use it)
 
-Полная дизайн-спецификация (многотенантность без привязки к владельцу, верификация,
-сетевой скоуп, очередь, кабинет, точки внедрения в коде): **[SELF-SERVE-DESIGN.md](SELF-SERVE-DESIGN.md)**.
+A separate scenario — opening autonomous pentesting to **platform users**, so each one scans only their own resources and the service is not tied to the owner account. It is an offensive tool, so two barriers are required:
 
-Реализации пока нет — это контракт, по которому её вести. MVP «безопасно открыть
-людям» = скоуп песочницы + верификация + очередь-воркер.
+1. **Target ownership verification** — the user proves the domain/repository is theirs (DNS TXT, a `/.well-known/…` file, or a file in the repository).
+2. **Sandbox network scope** — the running agent physically cannot reach anything but the proven target and the model endpoint (egress default-deny outside the container, because the sandbox has `NET_ADMIN` and confining it from inside is pointless).
 
-## Лицензия
+Full design spec (multi-tenancy without owner binding, verification, network scope, queue, cabinet, code integration points): **[SELF-SERVE-DESIGN.md](SELF-SERVE-DESIGN.md)**.
 
-Apache License 2.0 — см. [LICENSE](LICENSE) и [NOTICE](NOTICE). Основано на Strix (© Strix), с сохранением авторства согласно условиям лицензии.
+The design/contract lives here; the platform-side implementation (verification, queue, cabinet) lives in the Cyber Galaxy repo. MVP to "safely open it to people" = sandbox scope + verification + queue-worker.
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Based on Strix (© Strix), with attribution preserved per the license terms.
