@@ -1,9 +1,9 @@
-AI-Рейдер (ai-raider-agent)
+AI-Raider (ai-raider-agent)
 Copyright 2026 CYBER Department
 
-Это форк проекта Strix (https://github.com/usestrix/strix),
-Copyright Strix (hi@usestrix.com), распространяемого по лицензии Apache License 2.0.
+This is a fork of the Strix project (https://github.com/usestrix/strix),
+Copyright Strix (hi@usestrix.com), distributed under the Apache License 2.0.
 
-Исходный код Strix использован как основа и доработан. Полный текст лицензии — в файле LICENSE.
-Изменения относительно upstream: ребрендинг в «AI-Рейдер», телеметрия выключена по умолчанию,
-переработка интерфейса и последующие улучшения.
+The Strix source code is used as the basis and has been modified. The full license
+text is in the LICENSE file. Changes from upstream: rebranding to "AI-Raider",
+telemetry disabled by default, interface rework, and subsequent improvements.

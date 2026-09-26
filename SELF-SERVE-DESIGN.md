@@ -1,264 +1,271 @@
-# AI-Рейдер как self-serve сервис: верификация владения + сетевой скоуп песочницы
+# AI-Raider as a self-serve service: ownership verification + sandbox network scope
 
-Дизайн-спецификация. Как открыть автономный пентест пользователям Cyber Galaxy так,
-чтобы каждый мог сканировать **только свои** ресурсы, сервис не был завязан на
-owner-аккаунт, а запущенный агент физически не мог уйти на чужие хосты.
+[Русский](SELF-SERVE-DESIGN.ru.md) · **English**
 
-Статус: проект. Реализации ещё нет — это контракт, по которому её вести.
+Design spec. How to open autonomous pentesting to Cyber Galaxy users so that each one
+can scan **only their own** resources, the service is not tied to the owner account, and
+a running agent physically cannot reach other hosts.
+
+Status: design. Not yet implemented — this is the contract to build against.
 
 ---
 
-## 1. Зачем и модель угроз
+## 1. Why, and the threat model
 
-AI-Рейдер — наступательный инструмент: команда агентов внутри Docker-песочницы
-выполняет произвольный код и сетевые запросы против цели. Открыть такое «нажми и
-сканируй» посторонним людям безопасно можно только при двух гарантиях:
+AI-Raider is an offensive tool: a team of agents inside a Docker sandbox runs arbitrary
+code and network requests against the target. Opening such "click and scan" to outsiders
+is only safe with two guarantees:
 
-1. **Авторизация цели** — пользователь доказал, что цель принадлежит ему.
-2. **Сетевой скоуп** — даже если агент захочет, он не достучится ни до чего, кроме
-   доказанной цели и эндпоинта модели.
+1. **Target authorization** — the user has proven the target belongs to them.
+2. **Network scope** — even if the agent wanted to, it cannot reach anything but the
+   proven target and the model endpoint.
 
-Чего боимся (threat model):
+Threat model:
 
-| Угроза | Последствие | Митигируется в |
+| Threat | Consequence | Mitigated in |
 |---|---|---|
-| Скан чужого сайта/репозитория | Незаконная атака с нашего IP, ответственность на платформе | §3 верификация + §4 скоуп |
-| Агент уходит на сторонний хост (пивот, эксфильтрация) | Платформа как прокси для атак | §4 egress-allowlist |
-| SSRF в облачные метаданные (169.254.169.254) | Кража кредов инфраструктуры | §4 блок метадаты/private |
-| DNS-rebinding: домен доказан, потом переуказан на чужой IP | Скан чужого хоста под видом своего | §4 пиннинг IP + §3 повторная проверка при запуске |
-| Домен сменил владельца после верификации | Скан ресурса, который уже не твой | §3 срок годности + перепроверка |
-| Разорительная стоимость / бесконечный цикл | Слив бюджета, отказ сервиса | §4 лимиты стоимости/времени |
-| Утечка owner-кредов через общий канал импорта | Компрометация админки | §2 per-job токен вместо owner-cookie |
+| Scanning someone else's site/repo | Illegal attack from our IP, liability on the platform | §3 verification + §4 scope |
+| Agent leaves for a third-party host (pivot, exfiltration) | Platform as an attack proxy | §4 egress allowlist |
+| SSRF into cloud metadata (169.254.169.254) | Theft of infra credentials | §4 block metadata/private |
+| DNS rebinding: domain proven, then repointed to another IP | Scanning someone else's host under your name | §4 IP pinning + §3 re-check at launch |
+| Domain changed owner after verification | Scanning a resource that is no longer yours | §3 expiry + re-check |
+| Runaway cost / infinite loop | Budget drain, denial of service | §4 cost/time limits |
+| Owner credential leak via the shared import channel | Admin compromise | §2 per-job token instead of owner cookie |
 
-Принцип: **verify at the UI, enforce at the network.** UI-грант — необходимое, но
-не достаточное условие; настоящая граница — сетевая, вне контроля песочницы.
-
----
-
-## 2. Многопользовательская модель (не завязана на owner)
-
-Сейчас весь путь owner-only: находки шлются `POST /api/admin/pentest` с owner-cookie
-`cg_auth`. Для self-serve это меняется так:
-
-- **Актор — обычный аутентифицированный пользователь платформы**, не owner. Запуск
-  скана и просмотр своих находок доступны любому залогиненному юзеру.
-- **owner-права нужны только** для глобального каталога всех прогонов (админ-обзор) и
-  модерации. Личные креды владельца в пользовательских сканах не участвуют вообще.
-- **Импорт находок — по per-job service-токену**, а не по owner-cookie. Оркестратор
-  прогона получает короткоживущий подписанный токен задачи; сервер по токену находит
-  job → пользователя и пишет находки под его `uid`. Владелец из цепочки исключён.
-- Ещё чище: находки пишет **платформенный воркер напрямую в БД** под `owner_uid`
-  задачи, без HTTP-самовызова. Тогда токен нужен только если воркер и платформа
-  разнесены.
-
-Итог: сервис многотенантный, каждый видит своё, а «привязки ко мне» нет — я как
-владелец лишь администрирую, но не являюсь технической точкой прохождения сканов.
+Principle: **verify at the UI, enforce at the network.** A UI grant is necessary but not
+sufficient; the real boundary is the network, outside the sandbox's control.
 
 ---
 
-## 3. Верификация владения целью
+## 2. Multi-tenant model (not tied to the owner)
 
-Грант владения = запись `(user_uid, kind, scope, method, token, status, verified_at,
-expires_at, evidence)`. Пока грант не `verified` — запуск невозможен.
+Today the whole path is owner-only: findings are sent to `POST /api/admin/pentest` with
+the owner cookie `cg_auth`. For self-serve this changes:
 
-### 3.1 Веб-цель (домен/URL)
+- **The actor is an ordinary authenticated platform user**, not the owner. Launching a
+  scan and viewing one's own findings is available to any logged-in user.
+- **Owner rights are needed only** for the global catalog of all runs (admin overview)
+  and moderation. The owner's personal credentials are not involved in user scans at all.
+- **Findings import uses a per-job service token**, not the owner cookie. The run
+  orchestrator gets a short-lived signed job token; the server maps token → job → user
+  and writes findings under their `uid`. The owner is out of the chain.
+- Even cleaner: the **platform worker writes to the DB directly** under the job's
+  `owner_uid`, without an HTTP self-call. Then a token is only needed if the worker and
+  the platform are separate.
 
-Пользователь добавляет цель → платформа выдаёт токен `cg-verify=<random>` и одну из
-двух проверок (как в Google Search Console):
-
-1. **DNS TXT** — запись `cg-verify=<token>` в TXT на `_cyber-galaxy.<домен>`
-   (или на apex). Платформа резолвит и сверяет. Плюс: не требует доступа к сайту.
-2. **HTTP-файл** — файл `https://<домен>/.well-known/cyber-galaxy-verification.txt`
-   с токеном внутри. Платформа делает GET и сверяет. Плюс: просто для тех, у кого нет
-   доступа к DNS.
-
-Скоуп гранта = **точный origin** (scheme+host+port), который доказан. Поддомены —
-только явно добавленные и **каждый доказанный отдельно** (никаких wildcard на старте:
-владение apex не значит владение произвольным поддоменом, который мог быть делегирован).
-
-### 3.2 Репозиторий (код)
-
-- **MVP, просто:** файл `cyber-galaxy-verification.txt` с токеном в корне
-  дефолтной ветки. Платформа читает raw-содержимое, сверяет. Работает и для приватных
-  через токен доступа, который пользователь дал при подключении.
-- **Лучше, для GitHub:** OAuth-подключение GitHub → проверка, что у пользователя есть
-  `admin`/`push` на конкретном репозитории. Тогда владение = права, файл не нужен.
-
-Скоуп гранта = конкретный репозиторий и (опц.) ветка/коммит.
-
-### 3.3 Срок и перепроверка (TOCTOU)
-
-- Грант живёт ограниченно (напр. **90 дней**), потом требует повторной верификации.
-- **Перед каждым запуском** платформа делает дешёвую повторную проверку токена
-  (DNS/HTTP/права). Это закрывает «доказал → продал домен → сканирует чужое».
-- Для веба resolved-IP пиннится на момент старта (см. §4) — DNS-rebinding между
-  проверкой и сканом не помогает.
-- Пользователь или админ могут **отозвать** грант; активные задачи по нему убиваются.
+Result: the service is multi-tenant, everyone sees their own, and there is no "tied to
+me" — as the owner I only administer, I am not a technical point every scan passes
+through.
 
 ---
 
-## 4. Сетевой скоуп песочницы (ядро безопасности)
+## 3. Target ownership verification
 
-### 4.1 Почему нельзя ограничивать изнутри контейнера
+An ownership grant = a record `(user_uid, kind, scope, method, token, status,
+verified_at, expires_at, evidence)`. Until a grant is `verified`, launching is impossible.
 
-В `airaider/runtime/docker_client.py` песочнице добавляются capabilities `NET_ADMIN` и
-`NET_RAW` (нужны инструментам пентеста). Значит контейнер **может сам менять свои
-iptables/маршруты** и снять любые правила, поставленные внутри. Вывод: ограничение
-egress внутри песочницы бесполезно. Граница должна быть снаружи её сетевого namespace.
+### 3.1 Web target (domain/URL)
 
-Плюс сейчас в контейнер прокидывается `host.docker.internal` → host-gateway
-(`docker_client.py:232-233`). Для доверенных локальных сканов это удобно, но для чужих
-пользователей это **прямой путь к хосту** — в self-serve режиме его убираем.
+The user adds a target → the platform issues a token `cg-verify=<random>` and one of two
+checks (like Google Search Console):
 
-### 4.2 Схема: своя сеть на прогон + egress-gateway
+1. **DNS TXT** — a `cg-verify=<token>` TXT record at `_cyber-galaxy.<domain>` (or the
+   apex). The platform resolves and compares. Plus: needs no site access.
+2. **HTTP file** — a file `https://<domain>/.well-known/cyber-galaxy-verification.txt`
+   with the token inside. The platform does a GET and compares. Plus: simple for those
+   with no DNS access.
 
-На каждую задачу:
+Grant scope = the **exact origin** (scheme+host+port) that was proven. Subdomains — only
+explicitly added and **each proven separately** (no wildcards at the start: owning the
+apex does not mean owning an arbitrary subdomain that may have been delegated).
+
+### 3.2 Repository (code)
+
+- **MVP, simple:** a `cyber-galaxy-verification.txt` file with the token at the root of
+  the default branch. The platform reads the raw content and compares. Works for private
+  repos too via an access token the user provided when connecting.
+- **Better, for GitHub:** GitHub OAuth → check that the user has `admin`/`push` on the
+  specific repository. Then ownership = permissions, no file needed.
+
+Grant scope = the specific repository and (optionally) branch/commit.
+
+### 3.3 Expiry and re-check (TOCTOU)
+
+- A grant lives for a limited time (e.g. **90 days**), then requires re-verification.
+- **Before every launch** the platform does a cheap re-check of the token
+  (DNS/HTTP/permissions). This closes "proved → sold the domain → scans someone else's".
+- For web, the resolved IP is pinned at launch (see §4) — DNS rebinding between the check
+  and the scan does not help.
+- The user or an admin can **revoke** a grant; active jobs under it are killed.
+
+---
+
+## 4. Sandbox network scope (the security core)
+
+### 4.1 Why you cannot confine from inside the container
+
+In `airaider/runtime/docker_client.py` the sandbox is given the `NET_ADMIN` and
+`NET_RAW` capabilities (needed by pentest tools). So the container **can change its own
+iptables/routes** and strip any rules set inside. Conclusion: confining egress from
+inside the sandbox is useless. The boundary must be outside its network namespace.
+
+Also, `host.docker.internal` → host-gateway is currently passed into the container
+(`docker_client.py:232-233`). Convenient for trusted local scans, but for outside users
+it is a **direct path to the host** — in self-serve mode we remove it.
+
+### 4.2 Scheme: a per-scan network + egress gateway
+
+For each job:
 
 ```
-                        ┌─────────────────────────────────────┐
-                        │  per-scan Docker network (internal)   │
-                        │                                       │
-   [sandbox контейнер] ─┼──► [egress-gateway контейнер] ──► интернет (только allowlist)
-   NET_ADMIN/NET_RAW    │     iptables/nftables вне             │
-   но выхода в мир нет   │     контроля песочницы                │
-                        └─────────────────────────────────────┘
+                        +---------------------------------------+
+                        |  per-scan Docker network (internal)   |
+                        |                                       |
+   [sandbox container] -+--> [egress-gateway container] --> internet (allowlist only)
+   NET_ADMIN/NET_RAW    |     iptables/nftables outside         |
+   but no way out       |     the sandbox's control             |
+                        +---------------------------------------+
 ```
 
-- Песочница подключается к **`--internal` Docker-сети** без маршрута наружу. Сама она
-  выйти в интернет не может, что бы ни делала со своими iptables.
-- Единственный выход — через **egress-gateway** (отдельный контейнер-шлюз) с
-  default-deny и allowlist. Его правила живут в его namespace, песочница их не трогает.
-- Gateway матчит по **destination IP:port**, а не по hostname (иначе DNS-rebinding).
+- The sandbox attaches to an **`--internal` Docker network** with no route out. It cannot
+  reach the internet on its own, whatever it does to its iptables.
+- The only exit is through the **egress gateway** (a separate gateway container) with
+  default-deny and an allowlist. Its rules live in its namespace; the sandbox cannot
+  touch them.
+- The gateway matches by **destination IP:port**, not by hostname (otherwise DNS
+  rebinding).
 
-### 4.3 Что в allowlist
+### 4.3 What is on the allowlist
 
-Ровно два класса назначений, остальное — drop:
+Exactly two classes of destinations, everything else is dropped:
 
-1. **Цель гранта**, зарезолвленная в IP на старте задачи и **запиннингованная**:
-   - веб: `IP(host):port` доказанного origin;
-   - репо: хост git-хостинга (github.com и его CDN).
-2. **Эндпоинт модели** — фиксированный, контролируемый платформой список
-   (`api.openai.com`, `openrouter.ai`, `generativelanguage.googleapis.com`, локальный
-   Ollama и т.п.), в зависимости от выбранного провайдера.
+1. **The grant's target**, resolved to IP at job start and **pinned**:
+   - web: `IP(host):port` of the proven origin;
+   - repo: the git-hosting host (github.com and its CDN).
+2. **The model endpoint** — a fixed, platform-controlled list (`api.openai.com`,
+   `openrouter.ai`, `generativelanguage.googleapis.com`, local Ollama, etc.), depending
+   on the chosen provider.
 
-Явно **всегда drop**, даже если случайно попало в цель:
+Explicitly **always dropped**, even if it accidentally ends up in the target:
 
-- Облачная метадата: `169.254.169.254`, `fd00:ec2::254`, `metadata.google.internal`.
+- Cloud metadata: `169.254.169.254`, `fd00:ec2::254`, `metadata.google.internal`.
 - Private/loopback/link-local: `10/8`, `172.16/12`, `192.168/16`, `127/8`, `169.254/16`,
   `::1`, `fc00::/7`, `fe80::/10`.
-- Хост и внутренняя сеть платформы, `host.docker.internal`, сам эндпоинт импорта.
+- The host and the platform's internal network, `host.docker.internal`, the import
+  endpoint itself.
 
-Если доказанный origin резолвится в приватный IP — задачу не запускаем (это либо
-внутренний ресурс, либо попытка обойти скоуп).
+If the proven origin resolves to a private IP — we do not launch the job (it is either an
+internal resource or an attempt to bypass the scope).
 
-### 4.4 Лимиты на прогон
+### 4.4 Per-run limits
 
-- **Время** — жёсткий wall-clock timeout, по истечении контейнеры убиваются
-  (в коде уже есть kill в `docker_client.py`).
-- **Стоимость** — хард-кап по токенам/деньгам; при превышении задача останавливается.
-  Учёт уже собирается (`llm_usage` в `run.json`).
-- **CPU/RAM/PIDs** — через существующие `AIRAIDER_SANDBOX_MEM_LIMIT`, `AIRAIDER_SANDBOX_CPUS`,
-  `AIRAIDER_SANDBOX_PIDS_LIMIT` (`docker_client.py:69-90`).
-- **Rate limit** — N одновременных и M/сутки сканов на пользователя.
-- Контейнер: не privileged, `--read-only` rootfs где можно, код цели монтируется
-  read-only, дропнуть лишние caps.
+- **Time** — a hard wall-clock timeout; on expiry the containers are killed (a kill
+  already exists in `docker_client.py`).
+- **Cost** — a hard cap on tokens/money; on exceeding it the job stops. Accounting is
+  already collected (`llm_usage` in `run.json`).
+- **CPU/RAM/PIDs** — via the existing `AIRAIDER_SANDBOX_MEM_LIMIT`,
+  `AIRAIDER_SANDBOX_CPUS`, `AIRAIDER_SANDBOX_PIDS_LIMIT` (`docker_client.py:69-90`).
+- **Rate limit** — N concurrent and M/day scans per user.
+- Container: not privileged, `--read-only` rootfs where possible, target code mounted
+  read-only, drop extra caps.
 
-### 4.5 Точки внедрения в коде ai-raider
+### 4.5 Integration points in the ai-raider code
 
-- `_apply_sandbox_network()` (`docker_client.py:62`) уже переключает сеть по
-  `AIRAIDER_DOCKER_SANDBOX_NETWORK`. Оркестратор создаёт per-scan `--internal` сеть и
-  передаёт её имя сюда.
-- Прокидку `host.docker.internal` (`docker_client.py:232-233`) сделать условной: в
-  self-serve режиме (напр. `AIRAIDER_SELF_SERVE=1`) не добавлять host-gateway.
-- Egress-gateway и его nftables-allowlist — новый компонент оркестратора (вне образа
-  песочницы). Список разрешённых `host:port` он получает от платформы на задачу.
-- Импорт находок: `scripts/push_findings.py` принимает `CG_JOB_TOKEN` вместо
-  `CG_AUTH_COOKIE` и шлёт заголовок `Authorization: Bearer <job-token>` (или воркер
-  пишет в БД напрямую).
-
----
-
-## 5. Поток end-to-end
-
-1. **Добавление цели.** Пользователь вводит домен/URL или репозиторий → грант `pending`
-   + токен + инструкция проверки.
-2. **Верификация.** Пользователь ставит DNS TXT / well-known файл / файл в репо →
-   жмёт «Проверить» → грант `verified` (со сроком).
-3. **Запуск.** Пользователь выбирает режим (quick/standard/deep) в пределах бюджета →
-   создаётся `scan_job` в очереди. Фиксируется явное согласие на тест (ToS).
-4. **Перепроверка + скоуп.** Воркер берёт задачу → повторно проверяет владение →
-   резолвит и пиннит IP цели → поднимает per-scan `--internal` сеть + egress-gateway с
-   allowlist (цель + модель) → запускает песочницу.
-5. **Прогон.** Агенты работают, пишут run-каталог. Всё, что мимо allowlist, шлюз режет
-   и логирует.
-6. **Сбор находок.** Воркер собирает `vulnerabilities.json` + отчёт → пишет в БД под
-   `owner_uid` задачи (или пушит по job-токену).
-7. **Кабинет.** Находки и отчёт появляются у пользователя. Аудит по задаче ведётся.
+- `_apply_sandbox_network()` (`docker_client.py:62`) already switches the network via
+  `AIRAIDER_DOCKER_SANDBOX_NETWORK`. The orchestrator creates a per-scan `--internal`
+  network and passes its name here.
+- Make the `host.docker.internal` injection (`docker_client.py:232-233`) conditional: in
+  self-serve mode (e.g. `AIRAIDER_SELF_SERVE=1`) do not add the host-gateway.
+- The egress gateway and its nftables allowlist — a new orchestrator component (outside
+  the sandbox image). It gets the allowed `host:port` list from the platform per job.
+- Findings import: `scripts/push_findings.py` accepts `CG_JOB_TOKEN` instead of
+  `CG_AUTH_COOKIE` and sends `Authorization: Bearer <job-token>` (or the worker writes to
+  the DB directly).
 
 ---
 
-## 6. Данные (платформа)
+## 5. End-to-end flow
 
-Новые/изменённые таблицы (Supabase, с RLS):
+1. **Add a target.** The user enters a domain/URL or repository → a `pending` grant +
+   token + verification instructions.
+2. **Verification.** The user sets a DNS TXT / well-known file / repo file → clicks
+   "Verify" → the grant becomes `verified` (with expiry).
+3. **Launch.** The user picks a mode (quick/standard/deep) within budget → a `scan_job`
+   is created in the queue. Explicit consent to test (ToS) is recorded.
+4. **Re-check + scope.** The worker takes the job → re-checks ownership → resolves and
+   pins the target IP → brings up a per-scan `--internal` network + egress gateway with
+   an allowlist (target + model) → launches the sandbox.
+5. **Run.** The agents work and write the run directory. Anything off the allowlist is cut
+   and logged by the gateway.
+6. **Collect findings.** The worker collects `vulnerabilities.json` + report → writes to
+   the DB under the job's `owner_uid` (or pushes with the job token).
+7. **Cabinet.** Findings and report appear for the user. A per-job audit is kept.
+
+---
+
+## 6. Data (platform)
+
+New/changed tables (Supabase, with RLS):
 
 - `scan_target_grants` — `id, user_uid, kind(web|repo), scope(origin|repo url),
   method(dns|http|repo-file|github-oauth), token, status(pending|verified|expired|
   revoked), verified_at, expires_at, evidence(jsonb)`.
 - `scan_jobs` — `id, user_uid, grant_id, target, scan_mode, status(queued|running|done|
   failed|killed), cost, budget_cap, egress_allow(jsonb), started_at, finished_at`.
-- `pentest_runs` / `pentest_findings` — добавить `owner_uid` (пользователь-владелец
-  прогона). RLS: пользователь видит только свои строки; owner/editor — все.
-- Аудит: переиспользовать `admin_audit_events` + пользовательский журнал задач; логировать
-  события egress-deny (сигнал злоупотребления или скомпрометированного агента).
+- `pentest_runs` / `pentest_findings` — add `owner_uid` (the run's owning user). RLS: a
+  user sees only their own rows; owner/editor — all.
+- Audit: reuse `admin_audit_events` + a per-user job log; log egress-deny events (a signal
+  of abuse or a compromised agent).
 
-Эндпоинты (примерно):
+Endpoints (roughly):
 
-- `POST /api/targets` — добавить цель, вернуть токен/инструкцию.
-- `POST /api/targets/:id/verify` — запустить проверку владения.
-- `POST /api/scans` — поставить задачу (только по `verified` гранту, в пределах лимитов).
-- `GET /api/scans/:id` — статус/находки задачи (только свои).
-- Существующий `POST /api/admin/pentest` остаётся для owner-импорта; для self-serve —
-  запись под `owner_uid` задачи по job-токену.
+- `POST /api/targets` — add a target, return token/instructions.
+- `POST /api/targets/:id/verify` — run the ownership check.
+- `POST /api/scans` — enqueue a job (only on a `verified` grant, within limits).
+- `GET /api/scans/:id` — a job's status/findings (own only).
+- The existing `POST /api/admin/pentest` stays for owner import; for self-serve — a write
+  under the job's `owner_uid` with the job token.
 
 ---
 
-## 7. Разнесение по репозиториям
+## 7. Split across repositories
 
-| Компонент | Где | Что делать |
+| Component | Where | What to do |
 |---|---|---|
-| Верификация владения, гранты, очередь, кабинет | платформа (`New project 3/platform`) | новые таблицы, эндпоинты, UI |
-| Воркер: перепроверка, per-scan сеть, egress-gateway, лимиты, сбор находок | платформа/инфра (новый сервис) | оркестрация Docker-раннера |
-| Условный host-gateway, приём имени per-scan сети | ai-raider (`docker_client.py`) | флаг `AIRAIDER_SELF_SERVE`, точки §4.5 |
-| Импорт по job-токену | ai-raider (`scripts/push_findings.py`) | `CG_JOB_TOKEN` → Bearer |
+| Ownership verification, grants, queue, cabinet | platform (Cyber Galaxy) | new tables, endpoints, UI |
+| Worker: re-check, per-scan network, egress gateway, limits, findings collection | platform/infra (a new service) | Docker runner orchestration |
+| Conditional host-gateway, accepting the per-scan network name | ai-raider (`docker_client.py`) | flag `AIRAIDER_SELF_SERVE`, points in §4.5 |
+| Import via job token | ai-raider (`scripts/push_findings.py`) | `CG_JOB_TOKEN` → Bearer |
 
 ---
 
-## 8. Безопасность и злоупотребления (чек-лист)
+## 8. Security and abuse (checklist)
 
-- [ ] Запуск только по `verified` гранту, перепроверка при старте.
-- [ ] Egress default-deny, allowlist по IP, пиннинг IP цели.
-- [ ] Блок метадаты/private/loopback/host, отказ если цель резолвится в приватный IP.
-- [ ] Хард-кап стоимости и времени, kill при превышении.
-- [ ] Rate limit сканов на пользователя.
-- [ ] Явное согласие на тест (ToS) с записью «кто авторизовал».
-- [ ] Отзыв гранта → убой активных задач.
-- [ ] Находки под `uid` пользователя, RLS, owner-креды вне цепочки.
-- [ ] Логирование egress-deny и всех запусков.
-- [ ] По умолчанию — код и стейджинг; продакшн-цели с явным предупреждением.
+- [ ] Launch only on a `verified` grant, re-check at start.
+- [ ] Egress default-deny, allowlist by IP, target IP pinning.
+- [ ] Block metadata/private/loopback/host, refuse if the target resolves to a private IP.
+- [ ] Hard cap on cost and time, kill on exceeding.
+- [ ] Rate limit scans per user.
+- [ ] Explicit consent to test (ToS) with a "who authorized" record.
+- [ ] Grant revocation → kill active jobs.
+- [ ] Findings under the user's `uid`, RLS, owner credentials out of the chain.
+- [ ] Logging of egress-deny and all launches.
+- [ ] Default to code and staging; production targets with an explicit warning.
 
 ---
 
-## 9. Этапы внедрения
+## 9. Rollout stages
 
-1. **Скоуп песочницы (ai-raider).** Флаг `AIRAIDER_SELF_SERVE`: убрать host-gateway,
-   принять имя `--internal` сети. Прототип egress-gateway с allowlist. Проверить, что
-   песочница не выходит никуда, кроме цели и модели, даже пытаясь править свои iptables.
-2. **Верификация владения (платформа).** Гранты + DNS TXT / well-known / repo-file,
-   срок и перепроверка.
-3. **Очередь и воркер.** `scan_jobs`, оркестрация Docker-раннера, лимиты стоимости/времени,
-   сбор находок под `owner_uid`.
-4. **Кабинет пользователя.** Список задач, статусы, отчёты и находки; RLS.
-5. **Полировка.** Rate limit, ToS-согласие, отзыв грантов, дашборд egress-deny.
+1. **Sandbox scope (ai-raider).** Flag `AIRAIDER_SELF_SERVE`: remove host-gateway, accept
+   the `--internal` network name. An egress-gateway prototype with an allowlist. Verify
+   that the sandbox cannot reach anything but the target and the model, even while trying
+   to edit its own iptables.
+2. **Ownership verification (platform).** Grants + DNS TXT / well-known / repo-file,
+   expiry and re-check.
+3. **Queue and worker.** `scan_jobs`, Docker runner orchestration, cost/time limits,
+   findings collection under `owner_uid`.
+4. **User cabinet.** Job list, statuses, reports and findings; RLS.
+5. **Polish.** Rate limit, ToS consent, grant revocation, egress-deny dashboard.
 
-MVP «безопасно открыть людям» = шаги 1–3. Шаг 1 — самый рискованный технически и должен
-быть закрыт и проверен первым.
+MVP "safely open to people" = stages 1–3. Stage 1 is the riskiest technically and must be
+closed and verified first.

@@ -1,85 +1,92 @@
-# Развернуть AI-Рейдер у себя (свой ключ, любой LLM)
+# Self-host AI-Raider (your own key, any LLM)
 
-AI-Рейдер — полностью self-hosted инструмент: он работает на вашей машине, в своей
-Docker-песочнице, с **вашей** моделью и **вашим** ключом. Никакой регистрации и
-нашего сервера не нужно. Данные никуда не уходят (а с локальной моделью — вообще
-остаются на вашем компьютере).
+[Русский](SELF-HOST.ru.md) · **English**
 
-> **Только авторизованное тестирование.** Сканируйте лишь свои системы или цели,
-> на которые у вас есть письменное разрешение.
+AI-Raider is a fully self-hosted tool: it runs on your machine, in its own Docker
+sandbox, with **your** model and **your** key. No sign-up and no server of ours is
+needed. Data never leaves your machine (and with a local model it never leaves your
+computer at all).
 
-## Что нужно
+> **Authorized testing only.** Only scan your own systems or targets you have written
+> permission to test.
 
-- **Docker** — песочница, в которой работают агенты. [Как поставить](https://docs.docker.com/get-docker/)
+## What you need
+
+- **Docker** — the sandbox the agents run in. [How to install](https://docs.docker.com/get-docker/)
 - **Python 3.12+**
-- **Модель**: ключ любого провайдера (OpenAI, Anthropic, Google Gemini, OpenRouter и
-  др.) **или** локальная модель через Ollama — без ключа и без утечки данных.
+- **A model**: a key for any provider (OpenAI, Anthropic, Google Gemini, OpenRouter,
+  etc.) **or** a local model via Ollama — no key, no data leaving your machine.
 
-## Установка за один шаг
+## One-step install
 
 ```bash
 git clone https://github.com/MaverickGH/ai-raider && cd ai-raider
 ./setup.sh
 ```
 
-`setup.sh` проверит Docker и Python, поставит инструмент в `.venv` и создаст `.env`
-из шаблона. Дальше остаётся вписать модель и ключ.
+`setup.sh` checks Docker and Python, installs the tool into `.venv`, and creates `.env`
+from the template. All that is left is to fill in your model and key.
 
 <details>
-<summary>Вручную, без setup.sh</summary>
+<summary>Manual, without setup.sh</summary>
 
 ```bash
-uv venv && uv pip install -e .      # или: python3 -m venv .venv && ./.venv/bin/pip install -e .
+uv venv && uv pip install -e .      # or: python3 -m venv .venv && ./.venv/bin/pip install -e .
 cp env.example .env
 ```
 </details>
 
-## Выбор модели — любой LLM
+## Choosing a model — any LLM
 
-Откройте `.env` и раскомментируйте **один** блок провайдера (уберите `#`):
+Open `.env` and uncomment **one** provider block (remove the `#`):
 
-| Провайдер | В `.env` |
+| Provider | In `.env` |
 |---|---|
 | OpenAI | `AIRAIDER_LLM=openai/gpt-5.4` + `OPENAI_API_KEY=…` |
 | Anthropic (Claude) | `AIRAIDER_LLM=anthropic/claude-sonnet-5` + `ANTHROPIC_API_KEY=…` |
-| Google Gemini (есть бесплатный тариф) | `AIRAIDER_LLM=gemini/gemini-2.5-pro` + `GEMINI_API_KEY=…` |
-| OpenRouter (много моделей одним ключом) | `AIRAIDER_LLM=openrouter/z-ai/glm-5.3` + `OPENROUTER_API_KEY=…` |
-| Локально (Ollama), без ключа | `AIRAIDER_LLM=ollama/qwen2.5:32b` + `LLM_API_BASE=http://localhost:11434` |
-| Любой OpenAI-совместимый (LM Studio, vLLM, шлюз) | `AIRAIDER_LLM=openai/<модель>` + `LLM_API_KEY=…` + `LLM_API_BASE=…` |
+| Google Gemini (has a free tier) | `AIRAIDER_LLM=gemini/gemini-2.5-pro` + `GEMINI_API_KEY=…` |
+| OpenRouter (many models, one key) | `AIRAIDER_LLM=openrouter/z-ai/glm-5.3` + `OPENROUTER_API_KEY=…` |
+| Local (Ollama), no key | `AIRAIDER_LLM=ollama/qwen2.5:32b` + `LLM_API_BASE=http://localhost:11434` |
+| Any OpenAI-compatible (LM Studio, vLLM, gateway) | `AIRAIDER_LLM=openai/<model>` + `LLM_API_KEY=…` + `LLM_API_BASE=…` |
 
-Модель — любой id [LiteLLM](https://docs.litellm.ai/docs/providers). Свой ключ и
-свои деньги на модель — под вашим контролем, не у нас.
+The model is any [LiteLLM](https://docs.litellm.ai/docs/providers) id. Your key and your
+model budget stay under your control, not ours.
 
-> **Совет по стоимости.** Агентный цикл делает сотни вызовов модели. Бесплатные
-> тарифы (напр. лимит Gemini) быстро упираются в квоту. Для завершённого скана нужна
-> модель с нормальным лимитом или локальная Ollama.
+> **A note on cost.** The agent loop makes hundreds of model calls. Free tiers (e.g. the
+> Gemini limit) hit their quota quickly. A completed scan needs a model with a real
+> limit, or a local Ollama.
 
-## Запуск скана
+## Running a scan
 
-Только по своей/разрешённой цели:
+Only against your own / authorized target:
 
 ```bash
-./run-scan.sh https://ваш-стенд quick        # облачная модель из .env
-./run-scan-local.sh https://ваш-стенд        # локальная модель (Ollama)
+./run-scan.sh https://your-staging quick        # cloud model from .env
+./run-scan-local.sh https://your-staging        # local model (Ollama)
 ```
 
-Режимы: `quick` (минуты), `standard`, `deep` (может идти часами — запускайте в фоне).
-Цель — URL, домен, IP или путь к коду (`./`).
+Modes: `quick` (minutes), `standard`, `deep` (can run for hours — run it in the
+background). The target is a URL, domain, IP, or a path to code (`./`).
 
-## Результаты
+## Results
 
-Всё пишется в `ai-raider_runs/<имя-прогона>/`:
+Everything is written to `ai-raider_runs/<run-name>/`:
 
-| Файл | Что |
+| File | What |
 |---|---|
-| `penetration_test_report.md` | Отчёт — читать первым |
-| `vulnerabilities/*.md` | По файлу на находку: PoC и как чинить |
-| `vulnerabilities.json` / `.csv` | Находки структурно |
-| `findings.sarif` | SARIF 2.1.0 для GitHub code scanning |
+| `penetration_test_report.md` | The report — read this first |
+| `vulnerabilities/*.md` | One file per finding: PoC and how to fix |
+| `vulnerabilities.json` / `.csv` | Findings, structured |
+| `findings.sarif` | SARIF 2.1.0 for GitHub code scanning |
 
-## Локально, без утечки данных
+View them in the browser with `ai-raider view`.
 
-Если данные не должны покидать машину — модель через Ollama:
+> The reports are generated in Russian by default (a fork feature). The tooling and this
+> guide are in English.
+
+## Local, with no data leaving your machine
+
+If data must not leave the machine — use a model via Ollama:
 
 ```bash
 ollama serve
@@ -87,9 +94,9 @@ ollama pull qwen2.5:32b
 ./run-scan-local.sh ./ quick
 ```
 
-Ни ключа, ни облака — весь пайплайн на вашем железе.
+No key, no cloud — the whole pipeline runs on your hardware.
 
-## Ответственность
+## Responsibility
 
-Это наступательный инструмент. Запуская его, вы отвечаете за то, что имеете право
-тестировать цель. По умолчанию тестируйте код и стейджинг, продакшн — осторожно.
+This is an offensive tool. By running it, you are responsible for having the right to
+test the target. By default, test code and staging; treat production with care.
