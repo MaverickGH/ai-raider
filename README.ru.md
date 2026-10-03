@@ -82,6 +82,20 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 
 Поддерживаются `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (сервис `ai-raider.local.<ИМЯ>`). Значение ключа вводится скрыто и нигде не печатается.
 
+## Экспорт находок в DefectDojo
+
+Каждый прогон пишет `findings.sarif` (SARIF 2.1.0) — загрузи его в GitHub code scanning или сразу в [DefectDojo](https://www.defectdojo.org/):
+
+```bash
+export DEFECTDOJO_URL=https://defectdojo.example.com
+export DEFECTDOJO_API_KEY=...
+export DEFECTDOJO_PRODUCT="My App"            # product + engagement создадутся автоматически
+export DEFECTDOJO_ENGAGEMENT_NAME="AI-Raider scan"
+python3 scripts/export-defectdojo.py          # последний прогон; работают и --run <кат> / --dry-run
+```
+
+Или укажи существующий engagement: `DEFECTDOJO_ENGAGEMENT=<id>`.
+
 ## Лицензия
 
 Apache License 2.0 — см. [LICENSE](LICENSE) и [NOTICE](NOTICE). Основано на Strix (© Strix), с сохранением авторства согласно условиям лицензии.
