@@ -88,6 +88,20 @@ On macOS you can instead keep the key in the Keychain so it is never exported in
 
 Supported: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (Keychain service `ai-raider.local.<NAME>`). Key values are entered hidden and never printed.
 
+## Export findings to DefectDojo
+
+Every run writes `findings.sarif` (SARIF 2.1.0) — upload it to GitHub code scanning, or push it straight into [DefectDojo](https://www.defectdojo.org/):
+
+```bash
+export DEFECTDOJO_URL=https://defectdojo.example.com
+export DEFECTDOJO_API_KEY=...
+export DEFECTDOJO_PRODUCT="My App"            # auto-creates product + engagement
+export DEFECTDOJO_ENGAGEMENT_NAME="AI-Raider scan"
+python3 scripts/export-defectdojo.py          # latest run; --run <dir> / --dry-run also work
+```
+
+Or target an existing engagement with `DEFECTDOJO_ENGAGEMENT=<id>`.
+
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Based on Strix (© Strix), with attribution preserved per the license terms.
