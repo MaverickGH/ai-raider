@@ -231,10 +231,17 @@ ignore = [
 # args they intentionally ignore.
 "tests/test_viewer_auth.py" = ["S105", "S106", "ARG001"]
 "tests/test_codex_auth.py" = ["S105", "S106", "SLF001"]
-# Hatchling loads the build hook by path, not as an importable package.
+# Standalone CLI helpers: print() IS their user-facing output, and they fetch
+# user-supplied URLs (webhooks / API endpoints) by design.
+"scripts/*.py" = ["T201", "S310"]
+# Scripts run by path, not imported as package modules (INP001). export-html's
+# lazy import keeps --help cheap and matches the repo's other lazy-import gates.
 "scripts/tui_sidecar_hook.py" = ["INP001"]
-# Standalone CLI helper run by path, not imported as a package module.
 "scripts/notify.py" = ["INP001"]
+"scripts/export-html.py" = ["INP001", "PLC0415"]
+# Bilingual (Russian) label table: Cyrillic letters that resemble Latin are
+# intentional (RUF001); the process-wide report language uses a documented global.
+"airaider/report/i18n.py" = ["RUF001", "PLW0603"]
 # Stdlib HTTP handler overrides (do_GET/do_POST).
 "airaider/interface/auth_cli.py" = ["N802"]
 "tests/test_codex_streaming.py" = ["N802"]

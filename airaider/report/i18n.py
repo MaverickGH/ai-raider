@@ -14,12 +14,16 @@ from __future__ import annotations
 
 import os
 
+
 REPORT_LANGS = ("en", "ru")
 _DEFAULT = "en"
 
 LABELS: dict[str, dict[str, str]] = {
     # --- executive report ---
-    "report_title": {"en": "Penetration test report", "ru": "Отчёт о тестировании на проникновение"},
+    "report_title": {
+        "en": "Penetration test report",
+        "ru": "Отчёт о тестировании на проникновение",
+    },
     "generated": {"en": "Generated", "ru": "Сформирован"},
     # --- vulnerability card: header ---
     "untitled": {"en": "Untitled vulnerability", "ru": "Уязвимость без названия"},
@@ -68,7 +72,10 @@ LABELS: dict[str, dict[str, str]] = {
     "reason": {"en": "Reason", "ru": "Причина"},
     # --- PDF export (viewer) ---
     "brand": {"en": "AI-Raider", "ru": "AI-Рейдер"},
-    "pdf_doc_title": {"en": "AI-Raider - security report", "ru": "AI-Рейдер — отчёт по безопасности"},
+    "pdf_doc_title": {
+        "en": "AI-Raider - security report",
+        "ru": "AI-Рейдер — отчёт по безопасности",
+    },
     "pdf_kicker": {"en": "PENETRATION TEST REPORT", "ru": "ОТЧЁТ О ТЕСТИРОВАНИИ НА ПРОНИКНОВЕНИЕ"},
     "pdf_cover_title": {"en": "Security Assessment", "ru": "Оценка безопасности"},
     "confidential": {"en": "CONFIDENTIAL", "ru": "КОНФИДЕНЦИАЛЬНО"},

@@ -31,6 +31,7 @@ import urllib.request
 import uuid
 from pathlib import Path
 
+
 RUNS_DIR = "ai-raider_runs"
 IMPORT_PATH = "/api/v2/import-scan/"
 SCAN_TYPE = "SARIF"
@@ -47,7 +48,9 @@ def _latest_run(runs_dir: Path) -> Path | None:
     return max(candidates, key=lambda p: p.stat().st_mtime) if candidates else None
 
 
-def _multipart(fields: dict[str, str], file_field: str, filename: str, file_bytes: bytes) -> tuple[bytes, str]:
+def _multipart(
+    fields: dict[str, str], file_field: str, filename: str, file_bytes: bytes
+) -> tuple[bytes, str]:
     """Encode fields + one file as multipart/form-data. Returns (body, content_type)."""
     boundary = f"----airaider{uuid.uuid4().hex}"
     crlf = "\r\n"
@@ -91,7 +94,9 @@ def build_fields() -> dict[str, str] | None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Export a run's findings to DefectDojo.")
     parser.add_argument("--run", help="run directory (default: latest)")
-    parser.add_argument("--dry-run", action="store_true", help="show what would be sent, don't upload")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="show what would be sent, don't upload"
+    )
     args = parser.parse_args()
 
     root = _repo_root()
@@ -102,7 +107,9 @@ def main() -> int:
     else:
         run_dir = _latest_run(root / RUNS_DIR)
         if run_dir is None:
-            raise SystemExit(f"No runs in {root / RUNS_DIR} — run a scan first (./run-scan.sh ...).")
+            raise SystemExit(
+                f"No runs in {root / RUNS_DIR} — run a scan first (./run-scan.sh ...)."
+            )
     if not run_dir.is_dir():
         raise SystemExit(f"Run directory not found: {run_dir}")
 
@@ -114,7 +121,9 @@ def main() -> int:
     fields = build_fields()
     if fields is None:
         return 2
-    target_desc = fields.get("engagement") or f"{fields.get('product_name')} / {fields.get('engagement_name')}"
+    target_desc = fields.get("engagement") or (
+        f"{fields.get('product_name')} / {fields.get('engagement_name')}"
+    )
     print(f"Run:        {run_dir.name}")
     print(f"SARIF:      {sarif} ({len(file_bytes)} bytes)")
     print(f"Target:     {target_desc}")
@@ -142,7 +151,7 @@ def main() -> int:
         print(f"✗ Import failed (HTTP {exc.code}):\n{detail}", file=sys.stderr)
         return 1
     except urllib.error.URLError as exc:
-        raise SystemExit(f"Could not reach {url}: {exc.reason}")
+        raise SystemExit(f"Could not reach {url}: {exc.reason}") from exc
 
 
 if __name__ == "__main__":
