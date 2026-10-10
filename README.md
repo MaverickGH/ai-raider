@@ -125,6 +125,29 @@ python3 scripts/export-defectdojo.py          # latest run; --run <dir> / --dry-
 
 Or target an existing engagement with `DEFECTDOJO_ENGAGEMENT=<id>`.
 
+## Notify Slack / Teams / Jira
+
+Post a run's summary (counts by severity, status, cost, top findings) to a chat webhook and/or open Jira issues — stdlib only, no dependencies:
+
+```bash
+# Chat webhook (Slack / Mattermost / Teams / Google Chat / any JSON endpoint)
+export AIRAIDER_WEBHOOK_URL=https://hooks.slack.com/services/XXX/YYY/ZZZ
+export AIRAIDER_WEBHOOK_FORMAT=slack            # slack | teams | gchat | json
+python3 scripts/notify.py                        # latest run; --run <dir> also works
+
+# Only ping when something serious turns up
+python3 scripts/notify.py --min-severity high
+
+# File Jira issues (one summary issue, or one per high/critical with --jira-per-finding)
+export JIRA_URL=https://acme.atlassian.net
+export JIRA_USER=you@acme.io                      # omit for a bare PAT (Server/DC)
+export JIRA_TOKEN=...                             # API token / personal access token
+export JIRA_PROJECT=SEC
+python3 scripts/notify.py --jira-per-finding
+```
+
+Add `--dry-run` to preview the message without sending. Wire it after a scan in CI or a cron job.
+
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Based on Strix (© Strix), with attribution preserved per the license terms.
