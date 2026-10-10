@@ -84,10 +84,11 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 
 ## Использование в CI (GitHub Actions)
 
-Подключи AI-Raider в любой workflow готовым action — он запускает скан и отдаёт SARIF-отчёт:
+Подключи AI-Raider в любой workflow composite-action'ом — он запускает скан и отдаёт SARIF-отчёт (пинь на `@main` или на тег релиза вроде `@v1`, когда выпустишь):
 
 ```yaml
-- uses: MaverickGH/ai-raider@v1
+- uses: MaverickGH/ai-raider@main
+  id: airaider
   with:
     target: ./                       # URL, домен, IP или путь к коду
     scan-mode: quick                 # quick | standard | deep
@@ -101,8 +102,9 @@ Job падает на подтверждённых находках (`fail-on-fi
 
 ```yaml
 - uses: github/codeql-action/upload-sarif@v3
+  if: always()                       # загрузить даже если скан упал на находках
   with:
-    sarif_file: ${{ steps.<id>.outputs.sarif }}
+    sarif_file: ${{ steps.airaider.outputs.sarif }}
 ```
 
 ## HTML-отчёт для шаринга
