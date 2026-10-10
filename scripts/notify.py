@@ -45,6 +45,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+
 RUNS_DIR = "ai-raider_runs"
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 SEVERITY_RANK = {name: i for i, name in enumerate(SEVERITY_ORDER)}
@@ -171,11 +172,11 @@ def _webhook_payload(fmt: str, text: str) -> dict[str, Any]:
 
 def _post_json(url: str, payload: dict[str, Any], headers: dict[str, str] | None = None) -> int:
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data, method="POST")  # noqa: S310 (user-provided URL)
+    req = urllib.request.Request(url, data=data, method="POST")
     req.add_header("Content-Type", "application/json")
     for key, value in (headers or {}).items():
         req.add_header(key, value)
-    with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310
+    with urllib.request.urlopen(req, timeout=30) as resp:
         return int(resp.status)
 
 
@@ -239,13 +240,11 @@ def _jira_create_issue(
         }
     }
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(  # noqa: S310
-        f"{cfg['url']}/rest/api/2/issue", data=data, method="POST"
-    )
+    req = urllib.request.Request(f"{cfg['url']}/rest/api/2/issue", data=data, method="POST")
     req.add_header("Content-Type", "application/json")
     for key, value in auth.items():
         req.add_header(key, value)
-    with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310
+    with urllib.request.urlopen(req, timeout=30) as resp:
         body = json.loads(resp.read().decode("utf-8"))
     return str(body.get("key", "?"))
 
@@ -257,11 +256,7 @@ def send_jira(summary: dict[str, Any], *, per_finding: bool, dry_run: bool) -> b
 
     targets = ", ".join(summary["targets"]) or "(unspecified)"
     if per_finding:
-        issues = [
-            r
-            for r in summary["findings"]
-            if _severity_of(r) in ("critical", "high")
-        ]
+        issues = [r for r in summary["findings"] if _severity_of(r) in ("critical", "high")]
         if not issues:
             print("jira: no high/critical findings to file")
             return True
