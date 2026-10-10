@@ -119,6 +119,29 @@ python3 scripts/export-defectdojo.py          # последний прогон;
 
 Или укажи существующий engagement: `DEFECTDOJO_ENGAGEMENT=<id>`.
 
+## Уведомления в Slack / Teams / Jira
+
+Отправляй сводку по прогону (кол-во по severity, статус, стоимость, топ находок) в чат-вебхук и/или заводи задачи в Jira — только stdlib, без зависимостей:
+
+```bash
+# Чат-вебхук (Slack / Mattermost / Teams / Google Chat / любой JSON-эндпоинт)
+export AIRAIDER_WEBHOOK_URL=https://hooks.slack.com/services/XXX/YYY/ZZZ
+export AIRAIDER_WEBHOOK_FORMAT=slack            # slack | teams | gchat | json
+python3 scripts/notify.py                        # последний прогон; есть и --run <dir>
+
+# Пинговать только при серьёзных находках
+python3 scripts/notify.py --min-severity high
+
+# Заводить задачи в Jira (одна сводная или по одной на high/critical через --jira-per-finding)
+export JIRA_URL=https://acme.atlassian.net
+export JIRA_USER=you@acme.io                      # опусти для «голого» PAT (Server/DC)
+export JIRA_TOKEN=...                             # API-токен / personal access token
+export JIRA_PROJECT=SEC
+python3 scripts/notify.py --jira-per-finding
+```
+
+Добавь `--dry-run`, чтобы увидеть сообщение, ничего не отправляя. Вешай вызов после скана в CI или в cron.
+
 ## Лицензия
 
 Apache License 2.0 — см. [LICENSE](LICENSE) и [NOTICE](NOTICE). Основано на Strix (© Strix), с сохранением авторства согласно условиям лицензии.
