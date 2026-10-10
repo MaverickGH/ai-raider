@@ -90,10 +90,10 @@ Supported: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_
 
 ## Use in CI (GitHub Actions)
 
-Drop AI-Raider into any workflow with the composite action — it runs the scan and exposes the SARIF report (pin to `@main`, or to a release tag such as `@v1` once you cut one):
+Drop AI-Raider into any workflow with the composite action — it runs the scan and exposes the SARIF report (pin to `@v1` for the latest v1.x, or `@v1.0.0` to lock an exact release):
 
 ```yaml
-- uses: MaverickGH/ai-raider@main
+- uses: MaverickGH/ai-raider@v1
   id: airaider
   with:
     target: ./                       # URL, domain, IP, or path to code
