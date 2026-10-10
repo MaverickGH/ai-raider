@@ -111,6 +111,15 @@ The job fails on validated findings (set `fail-on-findings: "false"` to only rep
     sarif_file: ${{ steps.<id>.outputs.sarif }}
 ```
 
+## Shareable HTML report
+
+Every run also writes a single, self-contained `report.html` (all CSS inlined, light/dark, bilingual) next to the other artifacts — open it offline or send it to a stakeholder as one file. Rebuild it for an older run, or in another language, without re-scanning:
+
+```bash
+python3 scripts/export-html.py                 # latest run
+python3 scripts/export-html.py --run <dir> --report-lang ru
+```
+
 ## Export findings to DefectDojo
 
 Every run writes `findings.sarif` (SARIF 2.1.0) — upload it to GitHub code scanning, or push it straight into [DefectDojo](https://www.defectdojo.org/):

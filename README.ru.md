@@ -105,6 +105,15 @@ Job падает на подтверждённых находках (`fail-on-fi
     sarif_file: ${{ steps.<id>.outputs.sarif }}
 ```
 
+## HTML-отчёт для шаринга
+
+Каждый прогон также пишет один автономный файл `report.html` (весь CSS внутри, светлая/тёмная тема, двуязычный) рядом с остальными артефактами — открой офлайн или отправь как единый файл. Пересобрать для старого прогона или на другом языке без повторного скана:
+
+```bash
+python3 scripts/export-html.py                 # последний прогон
+python3 scripts/export-html.py --run <dir> --report-lang ru
+```
+
 ## Экспорт находок в DefectDojo
 
 Каждый прогон пишет `findings.sarif` (SARIF 2.1.0) — загрузи его в GitHub code scanning или сразу в [DefectDojo](https://www.defectdojo.org/):
