@@ -90,10 +90,11 @@ Supported: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_
 
 ## Use in CI (GitHub Actions)
 
-Drop AI-Raider into any workflow with the published action — it runs the scan and exposes the SARIF report:
+Drop AI-Raider into any workflow with the composite action — it runs the scan and exposes the SARIF report (pin to `@main`, or to a release tag such as `@v1` once you cut one):
 
 ```yaml
-- uses: MaverickGH/ai-raider@v1
+- uses: MaverickGH/ai-raider@main
+  id: airaider
   with:
     target: ./                       # URL, domain, IP, or path to code
     scan-mode: quick                 # quick | standard | deep
@@ -107,8 +108,9 @@ The job fails on validated findings (set `fail-on-findings: "false"` to only rep
 
 ```yaml
 - uses: github/codeql-action/upload-sarif@v3
+  if: always()                       # upload even when the scan step failed on findings
   with:
-    sarif_file: ${{ steps.<id>.outputs.sarif }}
+    sarif_file: ${{ steps.airaider.outputs.sarif }}
 ```
 
 ## Shareable HTML report
