@@ -80,6 +80,7 @@ LABELS: dict[str, dict[str, str]] = {
     "m_completed": {"en": "COMPLETED", "ru": "ЗАВЕРШЕНО"},
     "m_duration": {"en": "DURATION", "ru": "ДЛИТЕЛЬНОСТЬ"},
     "exec_summary": {"en": "Executive Summary", "ru": "Сводка для руководства"},
+    "llm_cost": {"en": "LLM cost", "ru": "Стоимость LLM"},
     "findings_section": {"en": "Findings", "ru": "Находки"},
     "total_findings_fmt": {
         "en": "<b>{n}</b> total findings across this assessment.",

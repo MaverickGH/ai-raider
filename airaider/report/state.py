@@ -14,6 +14,7 @@ from airaider.config import codex
 from airaider.config.loader import load_settings
 from airaider.core.paths import run_dir_for, runtime_state_dir
 from airaider.report.coverage import write_coverage
+from airaider.report.html import write_html_report
 from airaider.report.i18n import get_report_lang
 from airaider.report.pricing import resolve_litellm_model
 from airaider.report.sarif import write_sarif
@@ -738,6 +739,19 @@ class ReportState:
                 logger.exception("SARIF emit failed (non-fatal; CSV/MD unaffected)")
 
             write_run_record(run_dir, self.run_record)
+
+            # Self-contained, shareable HTML mirror of the report. Isolated in its
+            # own try: a render error must never break the MD/CSV/SARIF/run-record
+            # path above.
+            try:
+                write_html_report(
+                    run_dir,
+                    self.run_record,
+                    self.vulnerability_reports,
+                    self.final_scan_result,
+                )
+            except Exception:
+                logger.exception("HTML report write failed (non-fatal)")
 
             logger.info("Essential scan data saved to: %s", run_dir)
         except (OSError, RuntimeError):

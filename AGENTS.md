@@ -31,7 +31,7 @@ Target-specific workflows built on the same engine:
   ```
   - Requires Docker running. Scans take minutes (`quick`) to hours (`deep`) — run in the background.
   - Exit codes (headless): `0` clean, `1` fatal error, `2` vulnerabilities found. A `0` only covers what was analyzed — check `run.json` (`status`, `llm_usage.cost` vs the budget) before calling a run clean.
-  - Artifacts in `airaider_runs/<run-name>/`: `penetration_test_report.md`, `vulnerabilities/*.md`, `vulnerabilities.json`, `findings.sarif` (SARIF 2.1.0), `run.json`.
+  - Artifacts in `ai-raider_runs/<run-name>/`: `penetration_test_report.md`, `report.html` (self-contained, shareable), `vulnerabilities/*.md`, `vulnerabilities.json`, `findings.sarif` (SARIF 2.1.0), `run.json`.
 
   - Enable tab completion with `source <(airaider completions zsh)` (or `bash`), or `airaider completions fish | source`.
 
