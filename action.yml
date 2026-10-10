@@ -1,0 +1,78 @@
+name: "AI-Raider scan"
+description: "Run an autonomous AI pentest against an authorized target and emit SARIF 2.1.0."
+author: "CYBER Department"
+branding:
+  icon: "shield"
+  color: "red"
+
+inputs:
+  target:
+    description: "Target to scan: a URL, domain, IP, or path to code (e.g. ./)."
+    required: true
+  scan-mode:
+    description: "quick | standard | deep."
+    required: false
+    default: "quick"
+  model:
+    description: "LiteLLM model id for AIRAIDER_LLM (e.g. anthropic/claude-sonnet-5)."
+    required: true
+  max-budget:
+    description: "Hard cost cap in USD for the run."
+    required: false
+    default: "10"
+  report-lang:
+    description: "Report label language: en | ru."
+    required: false
+    default: "en"
+  fail-on-findings:
+    description: "Fail the job (exit 2) when validated vulnerabilities are found."
+    required: false
+    default: "true"
+  python-version:
+    description: "Python to use."
+    required: false
+    default: "3.12"
+
+outputs:
+  sarif:
+    description: "Path to the SARIF 2.1.0 report for the run."
+    value: ${{ steps.scan.outputs.sarif }}
+  run-dir:
+    description: "Path to the run directory with all artifacts."
+    value: ${{ steps.scan.outputs.run_dir }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install AI-Raider
+      shell: bash
+      run: uv pip install --system -e "${{ github.action_path }}"
+
+    - name: Run scan
+      id: scan
+      shell: bash
+      env:
+        AIRAIDER_LLM: ${{ inputs.model }}
+        AIRAIDER_REPORT_LANG: ${{ inputs.report-lang }}
+      run: |
+        set -uo pipefail
+        # The provider key (OPENAI_API_KEY / ANTHROPIC_API_KEY / ...) is inherited
+        # from the job env — set it there from a secret. Docker is preinstalled on
+        # GitHub-hosted Linux runners and powers the sandbox.
+        ai-raider -n -t "${{ inputs.target }}" \
+          --scan-mode "${{ inputs.scan-mode }}" \
+          --max-budget "${{ inputs.max-budget }}"
+        code=$?
+        run_dir="$(ls -1dt ai-raider_runs/*/ 2>/dev/null | head -1)"
+        echo "run_dir=${run_dir}" >> "$GITHUB_OUTPUT"
+        echo "sarif=${run_dir}findings.sarif" >> "$GITHUB_OUTPUT"
+        echo "AI-Raider exit code: ${code}"
+        if [ "${{ inputs.fail-on-findings }}" = "true" ]; then
+          exit "$code"      # 0 clean, 2 vulnerabilities found, 1 error
+        fi
+        [ "$code" = "1" ] && exit 1 || exit 0
