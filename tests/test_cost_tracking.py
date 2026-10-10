@@ -124,8 +124,12 @@ def test_cost_callback_estimates_cost_with_provider_prefixed_model() -> None:
             return 0.5
         raise ValueError(kwargs["model"])
 
+    # Patch resolve_litellm_model to identity so this test exercises the
+    # candidate-ordering logic rather than LiteLLM's live cost map, which drops
+    # and renames model keys between versions (e.g. the openrouter/ prefix).
     with (
         patch("airaider.report.state.get_global_report_state", return_value=report_state),
+        patch("airaider.report.state.resolve_litellm_model", side_effect=lambda name: name),
         patch("litellm.completion_cost", side_effect=fake_completion_cost),
     ):
         litellm_cost_callback(kwargs, response)
@@ -147,8 +151,12 @@ def test_cost_callback_estimates_cost_with_bare_model_fallback() -> None:
             return 0.025
         raise ValueError(kwargs["model"])
 
+    # Identity resolve (see note above): the provider-prefixed candidate
+    # ("openrouter/openai/gpt-4o-mini") raises, so the callback must fall back
+    # to the raw model name. Keeps the test independent of LiteLLM map drift.
     with (
         patch("airaider.report.state.get_global_report_state", return_value=report_state),
+        patch("airaider.report.state.resolve_litellm_model", side_effect=lambda name: name),
         patch("litellm.completion_cost", side_effect=fake_completion_cost),
     ):
         litellm_cost_callback(kwargs, response)
