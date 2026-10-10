@@ -88,6 +88,29 @@ On macOS you can instead keep the key in the Keychain so it is never exported in
 
 Supported: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (Keychain service `ai-raider.local.<NAME>`). Key values are entered hidden and never printed.
 
+## Use in CI (GitHub Actions)
+
+Drop AI-Raider into any workflow with the published action — it runs the scan and exposes the SARIF report:
+
+```yaml
+- uses: MaverickGH/ai-raider@v1
+  with:
+    target: ./                       # URL, domain, IP, or path to code
+    scan-mode: quick                 # quick | standard | deep
+    model: anthropic/claude-sonnet-5 # any LiteLLM id
+    max-budget: "10"
+  env:
+    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # the provider key for your model
+```
+
+The job fails on validated findings (set `fail-on-findings: "false"` to only report). Upload the result to code scanning with the action's `sarif` output:
+
+```yaml
+- uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: ${{ steps.<id>.outputs.sarif }}
+```
+
 ## Export findings to DefectDojo
 
 Every run writes `findings.sarif` (SARIF 2.1.0) — upload it to GitHub code scanning, or push it straight into [DefectDojo](https://www.defectdojo.org/):

@@ -82,6 +82,29 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 
 Поддерживаются `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `AIRAIDER_LLM`, `LLM_API_BASE` (сервис `ai-raider.local.<ИМЯ>`). Значение ключа вводится скрыто и нигде не печатается.
 
+## Использование в CI (GitHub Actions)
+
+Подключи AI-Raider в любой workflow готовым action — он запускает скан и отдаёт SARIF-отчёт:
+
+```yaml
+- uses: MaverickGH/ai-raider@v1
+  with:
+    target: ./                       # URL, домен, IP или путь к коду
+    scan-mode: quick                 # quick | standard | deep
+    model: anthropic/claude-sonnet-5 # любой id LiteLLM
+    max-budget: "10"
+  env:
+    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # ключ провайдера под твою модель
+```
+
+Job падает на подтверждённых находках (`fail-on-findings: "false"` — только отчёт). Загрузить результат в code scanning через output `sarif`:
+
+```yaml
+- uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: ${{ steps.<id>.outputs.sarif }}
+```
+
 ## Экспорт находок в DefectDojo
 
 Каждый прогон пишет `findings.sarif` (SARIF 2.1.0) — загрузи его в GitHub code scanning или сразу в [DefectDojo](https://www.defectdojo.org/):
