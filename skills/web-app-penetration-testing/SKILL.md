@@ -43,7 +43,7 @@ The scan runs locally in a Docker sandbox; findings and the PDF report are writt
 
 ## 3. Review results
 
-Read `airaider_runs/<run>/penetration_test_report.md` first, then per-finding files in `vulnerabilities/`. Each contains the PoC — re-run it yourself to confirm before reporting to the user.
+Read `ai-raider_runs/<run>/penetration_test_report.md` first, then per-finding files in `vulnerabilities/`. Each contains the PoC — re-run it yourself to confirm before reporting to the user.
 
 Exit codes: `0` no validated vulns in what was analyzed, `2` vulnerabilities found, `1` fatal error. A `0` is not proof of full coverage — if the budget or turn cap was hit the scan wraps up early, so check `run.json` status and cost against `--max-budget` before calling the app clean.
 

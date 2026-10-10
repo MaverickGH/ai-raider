@@ -6,7 +6,7 @@ import type {
 
 /**
  * Pure, dependency-free parsers that turn a AiRaider CLI local run
- * (`airaider_runs/<run>/{run.json,vulnerabilities.json}`) into the app's own
+ * (`ai-raider_runs/<run>/{run.json,vulnerabilities.json}`) into the app's own
  * types, so the /results view can reuse the dashboard's finding components.
  *
  * These run entirely client-side against files the user picked from disk —

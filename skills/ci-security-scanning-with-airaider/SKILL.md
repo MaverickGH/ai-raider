@@ -44,7 +44,7 @@ jobs:
       # (it still calls finish_scan and records "completed"), so size the budget.
       - name: Fail unless the scan completed
         run: |
-          run_json=$(ls -t airaider_runs/*/run.json | head -1)
+          run_json=$(ls -t ai-raider_runs/*/run.json | head -1)
           status=$(jq -r .status "$run_json")
           if [ "$status" != "completed" ]; then
             echo "AiRaider run status is '$status' — the scan did not complete (likely budget exhausted). Raise --max-budget." >&2
@@ -58,18 +58,18 @@ Notes:
 - In CI/headless runs AiRaider automatically scopes to the PR's changed files (`--scope-mode auto`). If diff resolution fails, keep `fetch-depth: 0` or set `--diff-base` to the PR's actual base branch — use `origin/${{ github.base_ref }}` in GitHub Actions rather than a hard-coded `origin/main`, since repos use different default branches.
 - Exit codes: `0` pass, `2` vulnerabilities found (fails the job), `1` setup error.
 - The runner needs Docker (default GitHub-hosted Ubuntu runners have it).
-- **Size the budget so the scan completes — do not let it fail open.** A `0` exit means "no validated vulnerabilities in what was analyzed"; if `--max-budget` is hit before the diff is fully covered, the scan wraps up early and can still exit `0`. The "Fail unless the scan completed" step above narrows the gap: `airaider_runs/<run>/run.json` is `"stopped"` when the scan was cut off at the hard budget limit without a final report. It is not a complete guard — the agents get graduated wrap-up warnings before that limit, and a run that wraps up on a warning still calls `finish_scan` and records `"completed"` with partial coverage. So keep that step in any pipeline that gates merges **and** give the scan real headroom (compare `run.json`'s `llm_usage.cost` against `--max-budget`; if it ran right up to the cap, raise it). For a `quick` diff-scoped PR scan `--max-budget 10` is usually ample, raise it for large diffs.
+- **Size the budget so the scan completes — do not let it fail open.** A `0` exit means "no validated vulnerabilities in what was analyzed"; if `--max-budget` is hit before the diff is fully covered, the scan wraps up early and can still exit `0`. The "Fail unless the scan completed" step above narrows the gap: `ai-raider_runs/<run>/run.json` is `"stopped"` when the scan was cut off at the hard budget limit without a final report. It is not a complete guard — the agents get graduated wrap-up warnings before that limit, and a run that wraps up on a warning still calls `finish_scan` and records `"completed"` with partial coverage. So keep that step in any pipeline that gates merges **and** give the scan real headroom (compare `run.json`'s `llm_usage.cost` against `--max-budget`; if it ran right up to the cap, raise it). For a `quick` diff-scoped PR scan `--max-budget 10` is usually ample, raise it for large diffs.
 
 ### Optional: upload findings to GitHub code scanning
 
-AiRaider writes SARIF 2.1.0 to `airaider_runs/<run>/findings.sarif`:
+AiRaider writes SARIF 2.1.0 to `ai-raider_runs/<run>/findings.sarif`:
 
 ```yaml
       - name: Upload SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: airaider_runs
+          sarif_file: ai-raider_runs
 ```
 
 ## Other CI systems

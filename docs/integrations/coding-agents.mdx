@@ -39,7 +39,7 @@ AiRaider runs self-hosted: the open-source CLI runs locally in a Docker sandbox 
 Everything an agent needs is machine-readable:
 
 - **Headless CLI** — `airaider -n` runs without the TUI and exits with `0` (clean), `1` (error), or `2` (vulnerabilities found).
-- **Structured results** — every run writes `vulnerabilities.json`, `vulnerabilities.csv`, `findings.sarif` (SARIF 2.1.0), and per-finding Markdown under `airaider_runs/<run-name>/`.
+- **Structured results** — every run writes `vulnerabilities.json`, `vulnerabilities.csv`, `findings.sarif` (SARIF 2.1.0), and per-finding Markdown under `ai-raider_runs/<run-name>/`.
 - **Budget controls** — `--max-budget` and `--max-turns` give agents hard cost/time caps.
 - **`AGENTS.md`** — the [repository's agent guide](https://github.com/MaverickGH/ai-raider/blob/main/AGENTS.md) with a quick reference.
 
