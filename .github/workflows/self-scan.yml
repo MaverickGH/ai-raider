@@ -1,0 +1,68 @@
+name: Self-scan (dogfood)
+
+# We run AI-Raider against its own codebase — the strongest signal that the tool
+# works, and the honest thing to do for a security product. Weekly + on demand.
+# Inert until an LLM key is provided, so it is green with no secret configured.
+#
+# To enable real scans, set in the repo:
+#   - secret  LLM_API_KEY       your provider key
+#   - variable AIRAIDER_LLM     any LiteLLM model id (e.g. anthropic/claude-sonnet-5)
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      scan-mode:
+        description: "quick | standard | deep"
+        default: "quick"
+      max-budget:
+        description: "USD budget cap"
+        default: "10"
+
+permissions:
+  contents: read
+  security-events: write # upload SARIF to code scanning
+
+concurrency:
+  group: self-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    # Don't run on forks (no key, and it would just fail the schedule).
+    if: ${{ github.repository == 'MaverickGH/ai-raider' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Guard on an LLM key
+        id: guard
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          if [ -z "${LLM_API_KEY}" ]; then
+            echo "LLM_API_KEY not set — skipping the self-scan (configure it to enable)."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: AI-Raider self-scan
+        if: steps.guard.outputs.run == 'true'
+        id: scan
+        uses: ./
+        with:
+          target: ./
+          scan-mode: ${{ inputs.scan-mode || 'quick' }}
+          model: ${{ vars.AIRAIDER_LLM }}
+          max-budget: ${{ inputs.max-budget || '10' }}
+          fail-on-findings: "false"
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+      - name: Upload SARIF to code scanning
+        if: ${{ always() && steps.guard.outputs.run == 'true' }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
