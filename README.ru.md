@@ -84,7 +84,7 @@ ai-raider -n -t ./путь-к-приложению --scan-mode quick
 
 ## Использование в CI (GitHub Actions)
 
-Подключи AI-Raider в любой workflow composite-action'ом — он запускает скан и отдаёт SARIF-отчёт (пинь на `@v1` для последней v1.x или `@v1.0.0`, чтобы зафиксировать точный релиз):
+Подключи AI-Raider в любой workflow composite-action'ом — он запускает скан и отдаёт SARIF-отчёт (пинь на `@v1` для последней v1.x или `@v1.0.1`, чтобы зафиксировать точный релиз):
 
 ```yaml
 - uses: MaverickGH/ai-raider@v1
