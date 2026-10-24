@@ -265,7 +265,7 @@ def render_html_report(
         f"<title>{_esc(t('pdf_doc_title'))}</title>"
         f"<style>{_CSS}</style></head>"
         f'<body><div class="wrap">{body}'
-        f'<footer>{_esc(t("brand"))} · {_esc(t("confidential"))}</footer>'
+        f"<footer>{_esc(t('brand'))} · {_esc(t('confidential'))}</footer>"
         "</div></body></html>"
     )
 

@@ -15,11 +15,11 @@ from __future__ import annotations
 
 import html
 import logging
-import os
 import re
 import secrets
 from datetime import datetime
 from io import BytesIO
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from markdown_it import MarkdownIt
@@ -53,8 +53,6 @@ from airaider.report.i18n import get_report_lang, set_report_lang, t
 
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from markdown_it.token import Token
 
 
@@ -86,15 +84,17 @@ _MONO = "Courier"
 # Candidate (regular, bold) system TTFs with Cyrillic, tried in order. No font is
 # bundled, so we borrow one from the OS; if none exists, ru falls back to en labels.
 _CYRILLIC_FONT_CANDIDATES: tuple[tuple[str, str], ...] = (
-    ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
-    ("/usr/share/fonts/dejavu/DejaVuSans.ttf",
-     "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf"),
-    ("/usr/share/fonts/TTF/DejaVuSans.ttf",
-     "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf"),
+    (
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    ),
+    ("/usr/share/fonts/dejavu/DejaVuSans.ttf", "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf"),
+    ("/usr/share/fonts/TTF/DejaVuSans.ttf", "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf"),
     ("/Library/Fonts/Arial Unicode.ttf", "/Library/Fonts/Arial Unicode.ttf"),
-    ("/System/Library/Fonts/Supplemental/Arial.ttf",
-     "/System/Library/Fonts/Supplemental/Arial Bold.ttf"),
+    (
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+    ),
     ("/Library/Fonts/Arial.ttf", "/Library/Fonts/Arial Bold.ttf"),
     ("C:\\Windows\\Fonts\\arial.ttf", "C:\\Windows\\Fonts\\arialbd.ttf"),
 )
@@ -104,17 +104,17 @@ _cyrillic_registered: tuple[str, str] | None = None
 
 def _register_cyrillic_fonts() -> tuple[str, str] | None:
     """Register a system Unicode TTF (regular, bold) with Cyrillic, or return None."""
-    global _cyrillic_registered
+    global _cyrillic_registered  # noqa: PLW0603 - one-time module-level font-registration cache
     if _cyrillic_registered is not None:
         return _cyrillic_registered
     for regular, bold in _CYRILLIC_FONT_CANDIDATES:
-        if not os.path.exists(regular):
+        if not Path(regular).exists():
             continue
         try:
             pdfmetrics.registerFont(TTFont("AiRaiderSans", regular))
-            bold_path = bold if os.path.exists(bold) else regular
+            bold_path = bold if Path(bold).exists() else regular
             pdfmetrics.registerFont(TTFont("AiRaiderSans-Bold", bold_path))
-        except Exception:  # noqa: BLE001 - a broken font file must not crash the report
+        except Exception:  # noqa: BLE001, S112  # nosec B112 - broken font must not crash
             continue
         _cyrillic_registered = ("AiRaiderSans", "AiRaiderSans-Bold")
         return _cyrillic_registered
@@ -137,6 +137,7 @@ def _resolve_fonts_and_lang(lang: str) -> tuple[str, str, str]:
         "Install DejaVu Sans (or Arial) for a Russian PDF.",
     )
     return "Helvetica", "Helvetica-Bold", "en"
+
 
 _PAGE_W, _PAGE_H = A4
 _INLINE_MD = MarkdownIt("commonmark", {"html": False, "linkify": False}).disable(
@@ -465,7 +466,9 @@ def _cover(
         )
     )
 
-    confidential = Table([[Paragraph(_esc(t("confidential")), styles["confidential"])]], colWidths=[120])
+    confidential = Table(
+        [[Paragraph(_esc(t("confidential")), styles["confidential"])]], colWidths=[120]
+    )
     confidential.setStyle(
         TableStyle(
             [

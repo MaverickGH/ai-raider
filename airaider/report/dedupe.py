@@ -60,7 +60,9 @@ def resolve_dedupe_model(dedupe: DedupeSettings, model_name: str) -> Model:
     api_base = (dedupe.api_base or "").strip() if dedupe.model else ""
     if not (api_key or api_base):
         return AiRaiderProvider().get_model(model_name)
-    return AiRaiderProvider(api_key=api_key or None, base_url=api_base or None).get_model(model_name)
+    return AiRaiderProvider(api_key=api_key or None, base_url=api_base or None).get_model(
+        model_name
+    )
 
 
 DEDUPE_SYSTEM_PROMPT = """You are an expert vulnerability report deduplication judge.

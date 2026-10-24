@@ -34,8 +34,12 @@ def _russian_report_lang() -> Any:
 
 def test_report_lang_switch_labels() -> None:
     report: dict[str, Any] = {
-        "id": "v1", "title": "SQLi", "severity": "high",
-        "timestamp": "2026-07-02", "target": "https://x", "description": "d",
+        "id": "v1",
+        "title": "SQLi",
+        "severity": "high",
+        "timestamp": "2026-07-02",
+        "target": "https://x",
+        "description": "d",
     }
     i18n.set_report_lang("en")
     en = render_vulnerability_md(report)

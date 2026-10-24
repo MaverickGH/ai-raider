@@ -26,7 +26,7 @@ class LlmSettings(BaseSettings):
     model: str | None = Field(default=None, validation_alias=AliasChoices("AIRAIDER_LLM"))
     api_type: ApiType | None = Field(
         default=None,
-        validation_alias=AliasChoices("AIRAIDER_API_TYPE", "AIRAIDER_FORCE_API", "AIRAIDER_API_TYPE", "AIRAIDER_FORCE_API"),
+        validation_alias=AliasChoices("AIRAIDER_API_TYPE", "AIRAIDER_FORCE_API"),
         description="Force 'responses' or 'chat_completions' API path",
     )
     api_key: str | None = Field(
@@ -36,14 +36,23 @@ class LlmSettings(BaseSettings):
     )
     api_base: str | None = Field(
         default=None,
-        validation_alias=AliasChoices("LLM_API_BASE", "OPENAI_API_BASE", "OPENAI_BASE_URL", "LITELLM_BASE_URL", "OLLAMA_API_BASE"),
+        validation_alias=AliasChoices(
+            "LLM_API_BASE",
+            "OPENAI_API_BASE",
+            "OPENAI_BASE_URL",
+            "LITELLM_BASE_URL",
+            "OLLAMA_API_BASE",
+        ),
     )
     extra_headers: dict[str, str] | None = Field(
         default=None,
         alias="LLM_EXTRA_HEADERS",
         repr=False,
     )
-    reasoning_effort: ReasoningEffort = Field(default="high", validation_alias=AliasChoices("AIRAIDER_REASONING_EFFORT"))
+    reasoning_effort: ReasoningEffort = Field(
+        default="high",
+        validation_alias=AliasChoices("AIRAIDER_REASONING_EFFORT"),
+    )
     force_required_tool_choice: bool = Field(
         default=False,
         validation_alias=AliasChoices("AIRAIDER_FORCE_REQUIRED_TOOL_CHOICE"),
@@ -87,15 +96,38 @@ class ContextSettings(BaseSettings):
 
     model_config = _BASE_CONFIG
 
-    auto_compact: bool = Field(default=True, validation_alias=AliasChoices("AIRAIDER_CONTEXT_AUTO_COMPACT"))
-    compact_buffer_tokens: int = Field(default=20_000, gt=0, validation_alias=AliasChoices("AIRAIDER_CONTEXT_BUFFER_TOKENS"))
-    keep_tokens: int = Field(default=8_000, gt=0, validation_alias=AliasChoices("AIRAIDER_CONTEXT_KEEP_TOKENS"))
+    auto_compact: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("AIRAIDER_CONTEXT_AUTO_COMPACT"),
+    )
+    compact_buffer_tokens: int = Field(
+        default=20_000,
+        gt=0,
+        validation_alias=AliasChoices("AIRAIDER_CONTEXT_BUFFER_TOKENS"),
+    )
+    keep_tokens: int = Field(
+        default=8_000,
+        gt=0,
+        validation_alias=AliasChoices("AIRAIDER_CONTEXT_KEEP_TOKENS"),
+    )
     fallback_context_tokens: int = Field(
         default=200_000, gt=0, validation_alias=AliasChoices("AIRAIDER_CONTEXT_FALLBACK_TOKENS")
     )
-    summary_max_tokens: int = Field(default=4_096, gt=0, validation_alias=AliasChoices("AIRAIDER_CONTEXT_SUMMARY_TOKENS"))
-    tool_output_max_tokens: int = Field(default=8_000, gt=0, validation_alias=AliasChoices("AIRAIDER_TOOL_OUTPUT_MAX_TOKENS"))
-    tool_output_max_lines: int = Field(default=2_000, gt=0, validation_alias=AliasChoices("AIRAIDER_TOOL_OUTPUT_MAX_LINES"))
+    summary_max_tokens: int = Field(
+        default=4_096,
+        gt=0,
+        validation_alias=AliasChoices("AIRAIDER_CONTEXT_SUMMARY_TOKENS"),
+    )
+    tool_output_max_tokens: int = Field(
+        default=8_000,
+        gt=0,
+        validation_alias=AliasChoices("AIRAIDER_TOOL_OUTPUT_MAX_TOKENS"),
+    )
+    tool_output_max_lines: int = Field(
+        default=2_000,
+        gt=0,
+        validation_alias=AliasChoices("AIRAIDER_TOOL_OUTPUT_MAX_LINES"),
+    )
     # Floor above the truncation-notice size so a preview always fits.
     tool_output_max_bytes: int = Field(
         default=50 * 1024, ge=1024, validation_alias=AliasChoices("AIRAIDER_TOOL_OUTPUT_MAX_BYTES")
@@ -109,15 +141,26 @@ class RuntimeSettings(BaseSettings):
         default="ai-raider-sandbox:0.1.0",
         validation_alias=AliasChoices("AIRAIDER_IMAGE"),
     )
-    backend: str = Field(default="docker", validation_alias=AliasChoices("AIRAIDER_RUNTIME_BACKEND"))
+    backend: str = Field(
+        default="docker",
+        validation_alias=AliasChoices("AIRAIDER_RUNTIME_BACKEND"),
+    )
     # Max screenshot/image tool outputs kept live per agent context (0 = none).
-    max_context_images: int = Field(default=3, ge=0, validation_alias=AliasChoices("AIRAIDER_MAX_CONTEXT_IMAGES"))
+    max_context_images: int = Field(
+        default=3,
+        ge=0,
+        validation_alias=AliasChoices("AIRAIDER_MAX_CONTEXT_IMAGES"),
+    )
 
 
 class TelemetrySettings(BaseSettings):
     model_config = _BASE_CONFIG
 
-    enabled: bool = Field(default=False, validation_alias=AliasChoices("AIRAIDER_TELEMETRY"))  # форк: телеметрия выключена по умолчанию
+    # форк: телеметрия выключена по умолчанию
+    enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AIRAIDER_TELEMETRY"),
+    )
 
 
 WebSearchProvider = Literal["auto", "perplexity", "exa"]
@@ -164,7 +207,10 @@ class ViewerSettings(BaseSettings):
     # Base URL of the AiRaider relay the local viewer proxies to for email
     # verification and encrypted report delivery. The browser never talks to
     # the relay directly; the local server is the only caller.
-    app_url: str = Field(default="https://app.strix.ai", validation_alias=AliasChoices("AIRAIDER_APP_URL"))
+    app_url: str = Field(
+        default="https://app.strix.ai",
+        validation_alias=AliasChoices("AIRAIDER_APP_URL"),
+    )
 
 
 class Settings(BaseSettings):

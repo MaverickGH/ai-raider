@@ -62,7 +62,8 @@ def run_view(argv: list[str]) -> None:
     if not bundle_is_built():
         console.print(
             "[bold red]Viewer UI is not built.[/]\n"
-            "Build it with: [cyan]cd airaider/interface/viewer/frontend && npm ci && npm run build[/]"
+            "Build it with: "
+            "[cyan]cd airaider/interface/viewer/frontend && npm ci && npm run build[/]"
         )
         raise SystemExit(1)
 

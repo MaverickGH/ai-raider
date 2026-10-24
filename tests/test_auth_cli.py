@@ -16,7 +16,9 @@ if TYPE_CHECKING:
 
 @pytest.fixture(autouse=True)
 def _tmp_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(codex, "AUTH_PATH", tmp_path / "home" / ".airaider" / "subscription-auth.json")
+    monkeypatch.setattr(
+        codex, "AUTH_PATH", tmp_path / "home" / ".airaider" / "subscription-auth.json"
+    )
 
 
 def test_login_provider_is_chatgpt() -> None:
