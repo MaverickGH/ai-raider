@@ -38,8 +38,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install via the action's own command
-        run: uv pip install --system -e .
+      - name: Install the way the action does
+        run: |
+          uv venv "$PWD/.venv"
+          uv pip install --python "$PWD/.venv/bin/python" -e .
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: CLI is usable
         run: |

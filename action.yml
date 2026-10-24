@@ -51,7 +51,13 @@ runs:
 
     - name: Install AI-Raider
       shell: bash
-      run: uv pip install --system -e "${{ github.action_path }}"
+      # Install into a venv (uv's managed Python is externally-managed, so
+      # `uv pip install --system` is refused on the runner) and put its bin on
+      # PATH so the `ai-raider` CLI resolves in the scan step.
+      run: |
+        uv venv "${{ github.action_path }}/.venv"
+        uv pip install --python "${{ github.action_path }}/.venv/bin/python" -e "${{ github.action_path }}"
+        echo "${{ github.action_path }}/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Run scan
       id: scan
