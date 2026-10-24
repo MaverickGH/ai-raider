@@ -191,7 +191,8 @@ async def warm_up_llm(show_model_warning: bool = True) -> None:
             warn_text.append("\n\n", style="white")
             warn_text.append(f"'{raw_model}'", style="bold cyan")
             warn_text.append(
-                " is not a recommended frontier model for AI-Рейдер.\nSecurity scans work best with:\n",
+                " is not a recommended frontier model for AI-Рейдер.\n"
+                "Security scans work best with:\n",
                 style="white",
             )
             for recommended_model in RECOMMENDED_MODEL_NAMES:
@@ -327,9 +328,7 @@ def display_completion_message(args: argparse.Namespace, results_path: Path) -> 
     console.print("\n")
     console.print(panel)
     console.print()
-    console.print(
-        "[dim]AI-Рейдер · автономный AI-пентест · только по разрешённым целям[/]"
-    )
+    console.print("[dim]AI-Рейдер · автономный AI-пентест · только по разрешённым целям[/]")
     console.print()
     if not args.non_interactive:
         notify_update(console)

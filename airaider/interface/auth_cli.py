@@ -38,7 +38,12 @@ _CALLBACK_TIMEOUT_S = 300
 LOGIN_PROVIDER = "chatgpt"
 _ACCEPTED_PROVIDERS = frozenset({LOGIN_PROVIDER, codex.PROVIDER})
 
-_USAGE = "Usage:\n  ai-raider auth login chatgpt [--manual]\n  ai-raider auth status\n  ai-raider auth logout"
+_USAGE = (
+    "Usage:\n"
+    "  ai-raider auth login chatgpt [--manual]\n"
+    "  ai-raider auth status\n"
+    "  ai-raider auth logout"
+)
 
 
 def run_auth(argv: list[str]) -> int:
@@ -245,7 +250,9 @@ def _first(query: dict[str, list[str]], key: str) -> str | None:
 def _status(console: Console) -> int:
     record = codex.read_record()
     if record is None:
-        console.print("[yellow]Not signed in.[/] Run [cyan]ai-raider auth login chatgpt[/] to sign in.")
+        console.print(
+            "[yellow]Not signed in.[/] Run [cyan]ai-raider auth login chatgpt[/] to sign in."
+        )
         return 1
     settings = load_settings()
     console.print("[green]Signed in[/] with a ChatGPT subscription.")
@@ -405,9 +412,11 @@ _CALLBACK_HTML = """<!doctype html>
     <p class="tagline">Autonomous AI hackers that <b>find and fix</b> your app's
       vulnerabilities.</p>
     <nav class="links">
-      <a href="https://github.com/MaverickGH/ai-raider" target="_blank" rel="noopener">github.com/MaverickGH/ai-raider</a>
+      <a href="https://github.com/MaverickGH/ai-raider"
+         target="_blank" rel="noopener">github.com/MaverickGH/ai-raider</a>
       <span class="dot">·</span>
-      <a href="https://github.com/MaverickGH/ai-raider#readme" target="_blank" rel="noopener">docs</a>
+      <a href="https://github.com/MaverickGH/ai-raider#readme"
+         target="_blank" rel="noopener">docs</a>
       <span class="dot">·</span>
       <a href="https://discord.gg/airaider-ai" target="_blank" rel="noopener">community</a>
     </nav>

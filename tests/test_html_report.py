@@ -31,7 +31,7 @@ VULNS = [
         "endpoint": "/login",
         "cwe": "CWE-89",
         "description": "the <user> param is injectable & breaks auth",
-        "poc_script_code": "curl -d \"u=' OR 1=1--\" https://shop.example/login",
+        "poc_script_code": 'curl -d "u=\' OR 1=1--" https://shop.example/login',
     },
     {"id": "V2", "title": "Low thing", "severity": "low", "timestamp": "t"},
 ]

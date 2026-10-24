@@ -1611,7 +1611,8 @@ def check_docker_connection() -> Any:
         error_text.append("\n\n", style="white")
         error_text.append("Cannot connect to Docker daemon.\n", style="white")
         error_text.append(
-            "Please ensure Docker Desktop is installed and running, and try running airaider again.\n",
+            "Please ensure Docker Desktop is installed and running, "
+            "and try running ai-raider again.\n",
             style="white",
         )
 
