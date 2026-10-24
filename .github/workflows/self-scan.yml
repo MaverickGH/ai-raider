@@ -1,16 +1,14 @@
 name: Self-scan (dogfood)
 
-# We run AI-Raider against its own codebase — the strongest signal that the tool
-# works, and the honest thing to do for a security product. Weekly + on demand.
-# Inert until an LLM key is provided, so it is green with no secret configured.
+# Run AI-Raider against its own codebase — the strongest signal that the tool
+# works, and the honest thing to do for a security product. Manual only (no
+# schedule, so no background LLM spend); trigger it from the Actions tab.
 #
-# To enable real scans, set in the repo:
+# To run a real scan, set in the repo:
 #   - secret  LLM_API_KEY       your provider key
 #   - variable AIRAIDER_LLM     any LiteLLM model id (e.g. anthropic/claude-sonnet-5)
 
 on:
-  schedule:
-    - cron: "0 6 * * 1" # Mondays 06:00 UTC
   workflow_dispatch:
     inputs:
       scan-mode:
