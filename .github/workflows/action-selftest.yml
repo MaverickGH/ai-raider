@@ -1,0 +1,96 @@
+name: Action self-test
+
+# Proves the composite GitHub Action in action.yml actually works, so we never
+# ship a broken "drop it into CI" story. The smoke job is keyless and always
+# runs; the live job runs the real action end-to-end and is opt-in (manual
+# dispatch + an LLM key secret).
+
+on:
+  pull_request:
+    paths:
+      - "action.yml"
+      - "pyproject.toml"
+      - ".github/workflows/action-selftest.yml"
+  push:
+    branches: [main]
+    paths:
+      - "action.yml"
+      - ".github/workflows/action-selftest.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: action-selftest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    # Keyless: proves the action's install step and CLI work on a clean runner,
+    # and that action.yml still declares the inputs/outputs the README documents.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install via the action's own command
+        run: uv pip install --system -e .
+
+      - name: CLI is usable
+        run: |
+          ai-raider --version
+          ai-raider --help
+
+      - name: action.yml declares the documented inputs/outputs
+        run: |
+          set -euo pipefail
+          grep -qE "using:\s*\"?composite" action.yml
+          for i in target scan-mode model max-budget fail-on-findings report-lang; do
+            grep -qE "^  ${i}:" action.yml || { echo "missing input: ${i}"; exit 1; }
+          done
+          for o in sarif run-dir; do
+            grep -qE "^  ${o}:" action.yml || { echo "missing output: ${o}"; exit 1; }
+          done
+          echo "action.yml inputs/outputs OK"
+
+  live:
+    # Full end-to-end run of the action itself. Opt-in: trigger manually and set
+    # the LLM_API_KEY secret (and optionally the AIRAIDER_LLM variable).
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Guard on an LLM key
+        id: guard
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          if [ -z "${LLM_API_KEY}" ]; then
+            echo "LLM_API_KEY not set — skipping the live action run."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run the action against a small target
+        if: steps.guard.outputs.run == 'true'
+        id: scan
+        uses: ./
+        with:
+          target: ./airaider/report/i18n.py
+          scan-mode: quick
+          model: ${{ vars.AIRAIDER_LLM }}
+          max-budget: "3"
+          fail-on-findings: "false"
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+      - name: The action produced a SARIF file
+        if: steps.guard.outputs.run == 'true'
+        run: test -f "${{ steps.scan.outputs.sarif }}"
