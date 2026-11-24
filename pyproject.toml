@@ -1,6 +1,6 @@
 [project]
 name = "ai-raider-agent"
-version = "0.1.0"
+version = "1.0.1"
 description = "AI-Рейдер — автономный AI-пентест (форк usestrix/strix, Apache-2.0)"
 readme = "README.md"
 license = "Apache-2.0"

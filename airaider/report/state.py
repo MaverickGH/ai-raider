@@ -41,7 +41,7 @@ _CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]+")
 def _airaider_version() -> str | None:
     """Best-effort package version for the SARIF tool.driver.version field."""
     try:
-        return version("airaider-agent")
+        return version("ai-raider-agent")
     except PackageNotFoundError:
         return None
 
