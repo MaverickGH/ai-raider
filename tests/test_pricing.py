@@ -10,18 +10,42 @@ from airaider.report.usage import LLMUsageLedger
 
 
 def test_resolves_common_bare_model_names() -> None:
-    resolve_litellm_model.cache_clear()
-    assert resolve_litellm_model("deepseek-v4-flash") == "deepseek/deepseek-v4-flash"
-    assert resolve_litellm_model("openai/deepseek-v4-flash") == "deepseek/deepseek-v4-flash"
-    # LiteLLM's catalog decides the provider prefix (e.g. xai/ vs openrouter/x-ai/),
-    # and it varies by litellm version, so assert only that the bare name resolves to
-    # some provider-qualified grok-4.5 id rather than pinning one provider.
-    grok = resolve_litellm_model("grok-4.5")
-    assert grok is not None and grok.endswith("/grok-4.5")
-    # MiniMax-M3 is sold by several LiteLLM providers at different prices, so
-    # the resolver must not guess from its bare name. A provider-qualified
-    # model remains deterministic.
-    assert resolve_litellm_model("minimax/MiniMax-M3") == "minimax/MiniMax-M3"
+    # Use a controlled catalog so this exercises the resolver's logic, not
+    # LiteLLM's live model_cost map — which is version-dependent and churns
+    # (model ids are added, removed, or split across providers over time, which
+    # repeatedly broke this test as written against the live catalog).
+    original = litellm.model_cost
+    litellm.model_cost = {
+        # Bare entry that names its own provider -> resolves to provider/name.
+        "deepseek-v4-flash": {
+            "litellm_provider": "deepseek",
+            "input_cost_per_token": 1.0,
+            "output_cost_per_token": 2.0,
+        },
+        # Only a provider-qualified id exists -> the bare name resolves to it.
+        "xai/grok-4.5": {
+            "input_cost_per_token": 1.0,
+            "output_cost_per_token": 2.0,
+        },
+        # Already provider-qualified -> returned as-is.
+        "minimax/MiniMax-M3": {
+            "input_cost_per_token": 3.0,
+            "output_cost_per_token": 4.0,
+        },
+    }
+    try:
+        resolve_litellm_model.cache_clear()
+        assert resolve_litellm_model("deepseek-v4-flash") == "deepseek/deepseek-v4-flash"
+        # The redundant `openai/` prefix is stripped before lookup.
+        assert resolve_litellm_model("openai/deepseek-v4-flash") == "deepseek/deepseek-v4-flash"
+        # The provider prefix comes from the catalog; assert only the suffix.
+        grok = resolve_litellm_model("grok-4.5")
+        assert grok is not None and grok.endswith("/grok-4.5")
+        # A provider-qualified id stays deterministic.
+        assert resolve_litellm_model("minimax/MiniMax-M3") == "minimax/MiniMax-M3"
+    finally:
+        litellm.model_cost = original
+        resolve_litellm_model.cache_clear()
 
 
 def test_resolver_returns_none_for_unresolvable_model() -> None:
